@@ -4,8 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "migrate:prod:generate": "drizzle-kit generate --config=drizzle-production.config.ts",
+    "migrate:prod:migrate": "drizzle-kit migrate --config=drizzle-production.config.ts",
+    "migrate:prod:pull": "drizzle-kit pull --config=drizzle-production.config.ts",
+    "migrate:prod:push": "drizzle-kit push --config=drizzle-production.config.ts",
+    "migrate:prod:check": "drizzle-kit check --config=drizzle-production.config.ts",
+    "migrate:prod:up": "drizzle-kit up --config=drizzle-production.config.ts",
+    "migrate:dev:generate": "drizzle-kit generate --config=drizzle-dev.config.ts",
+    "migrate:dev:migrate": "drizzle-kit migrate --config=drizzle-dev.config.ts",
+    "migrate:dev:pull": "drizzle-kit pull --config=drizzle-dev.config.ts",
+    "migrate:dev:push": "drizzle-kit push --config=drizzle-dev.config.ts",
+    "migrate:dev:check": "drizzle-kit check --config=drizzle-dev.config.ts",
+    "migrate:dev:up": "drizzle-kit up --config=drizzle-dev.config.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --ext ts --exec ts-node src/index.ts",
+    "dev": "nodemon --ext ts --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -13,16 +25,32 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.7",
+    "@neondatabase/serverless": "^1.0.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.41.0",
     "express": "^4.21.2",
-    "mssql": "^11.0.1"
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.2",
+    "mysql2": "^3.14.0",
+    "postgres": "^3.4.5",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/mssql": "^9.1.7",
-    "@types/node": "^22.13.5",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.14.0",
+    "drizzle-kit": "^0.30.6",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
   }
 }

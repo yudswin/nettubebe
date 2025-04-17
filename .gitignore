@@ -5,6 +5,9 @@ package-lock.json
 # TypeScript build output
 dist/
 
+# Migrations
+prisma/migrations
+
 # Environment variables
 .env
 
@@ -20,3 +23,5 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+drizzle/
