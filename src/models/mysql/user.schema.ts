@@ -10,7 +10,7 @@ export const users = mysqlTable(
         email: varchar('email', { length: 100 }).notNull().unique(),
         password: varchar('password', { length: 255 }).notNull(),
         joinDate: timestamp('joinDate').default(new Date()).notNull(),
-        avatarPath: varchar('avatarPath', { length: 255 }),
+        avatarId: int('avatarId').unique(),
         refreshToken: varchar('refreshToken', { length: 255 }),
         role: mysqlEnum('role', ['user', 'admin', 'dev']).notNull().default('user'),
     },

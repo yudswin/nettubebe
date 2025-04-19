@@ -30,7 +30,7 @@ export const createUser = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).json({
                 error: 'Invalid email format'
             });
-        } 
+        }
         // Validate password strength
         if (password.length < 8) {
             logger.warn('Week password format', 'UserController');
@@ -154,9 +154,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 export const getUsers = async (req: Request, res: Response): Promise<any> => {
     try {
         const result = await userService.getUsers();
-        res.status(201).json(result);
+        return res.status(201).json(result);
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };
 
@@ -166,9 +166,9 @@ export const updateUser = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const result = await userService.updateUser(Number(id), req.body);
-        res.status(200).json(result);
+        return res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : String(error)
         });
@@ -179,16 +179,16 @@ export const deleteUser = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const result = await userService.deleteUser(Number(id));
-        res.status(200).json(result);
+        return res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : String(error)
         });
     }
 };
 
-export const getSelf = async (req: Request, res: Response): Promise<void> => {
+export const getSelf = async (req: Request, res: Response): Promise<any> => {
     try {
         const { accesstoken, refreshtoken } = req.headers as {
             accesstoken?: string;
@@ -197,8 +197,7 @@ export const getSelf = async (req: Request, res: Response): Promise<void> => {
 
         if (!accesstoken && !refreshtoken) {
             logger.warn('Access token and refresh token missing', 'getSelf');
-            statusReturn.missingTokens(res);
-            return;
+            return statusReturn.missingTokens(res);
         }
 
         const token = accesstoken || refreshtoken;
@@ -206,12 +205,12 @@ export const getSelf = async (req: Request, res: Response): Promise<void> => {
 
         if (!decoded?.email) {
             logger.warn('Invalid or malformed token', 'getSelf');
-            statusReturn.invalidAccessToken(res);
-            return;
+            return statusReturn.invalidAccessToken(res);
+
         }
 
         const user = await userService.getByEmailWithoutPass(decoded.email);
-        res.json(user);
+        return res.status(200).json(user);
 
     } catch (error) {
         logger.error(`Error in getSelf: ${error instanceof Error ? error.message : String(error)}`);

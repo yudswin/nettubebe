@@ -71,7 +71,7 @@ export const getByEmailWithoutPass = async (email: string) => {
                 username: sqlUsers.username,
                 email: sqlUsers.email,
                 joinDate: sqlUsers.joinDate,
-                avatarPath: sqlUsers.avatarPath,
+                avatarId: sqlUsers.avatarId,
                 refreshToken: sqlUsers.refreshToken,
                 role: sqlUsers.role
             })
@@ -104,7 +104,7 @@ export const updateUser = async (
         username: string;
         email: string;
         password: string;
-        avatarPath: string | null;
+        avatarId: number | null;
         accessToken: string | null;
         refreshToken: string | null;
         role: UserRole;

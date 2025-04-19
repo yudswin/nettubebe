@@ -12,17 +12,25 @@
 ### TASK NOTE (alt + s: done)
 - Services
   - Users
-    - create
+    - ~~create~~
       - ~~error handler~~
       - ~~encrypt/decrypt password~~
       - ~~accessToken/ refreshToken handler~~
     - ~~register~~
     - ~~login~~
   - Videos
-    - upload (create)
-    - metadata (view)
-    - delete
-    - update
+    - schema
+    - services
+      - upload (create)
+      - metadata (view)
+      - delete
+      - update
+  - Avatars
+    - schema
+    - services
+      - upload
+      - getMeta
+      - delete
 - Libs
   - ~~bcrypt~~
     - ~~encrypt ~~
@@ -33,4 +41,10 @@
     - ~~decode Tokens~~
     - ~~refresh Token~~
   - ~~CORS~~
+  - Imgur
+    - ~~client~~
+    - ~~service~~
+      - ~~upload~~
+      - ~~get~~
+      - delete
   - 
