@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "sourceMap": true,
+    "plugins": [{ "transform": "ts-transform-paths" }],
     "declaration": true,
     "rootDir": "src",
     "baseUrl": ".",
@@ -22,7 +23,9 @@
       "@routes/*": ["src/routes/*"],
       "@services/*": ["src/services/*"],
       "@schema/sql/*": ["src/models/mysql/*"],
-      "@schema/pg/*": ["src/models/pg/*"]
+      "@schema/pg/*": ["src/models/pg/*"],
+      "@types/*": ["src/libs/types/*"],
+      "@libs/*": ["src/libs/*"]
     }
   },
   "include": ["src/**/*"],
