@@ -22,11 +22,11 @@ config:
 ---
 classDiagram
     class Users {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(255) Unique
         +email: varchar(255) Unique
         +password: varchar(60)
-        +avatar_id: char(12) FK
+        +avatar_id: varchar(12) FK
         +token: varchar(255)
         +roles: enum('user', 'admin', 'moderator')
         +gender: enum('male', 'female', 'none')
@@ -36,26 +36,26 @@ classDiagram
     Users --> Imgs : "avatar_id" as avatar
 
     class Favorite {
-        +_id: char(12) - PK
-        +user_id: char(12) - FK
-        +content_id: char(12) - FK
-        +favorited_at: date
+        +_id: varchar(12) - PK
+        +user_id: varchar(12) - FK
+        +content_id: varchar(12) - FK
+        +favorited_at: timestamp
     }
     Favorite --> Users : "user_id"
     Favorite --> Contents : "content_id"
 
     class History {
-        _id: char(12) - PK
-        user_id: char(12) - FK
-        media_id: char(12) - FK
-        watched_at: date
+        _id: varchar(12) - PK
+        user_id: varchar(12) - FK
+        media_id: varchar(12) - FK
+        watched_at: timestamp
         progress: integer
     }
     History --> Users : "user_id"
     History --> Media : "media_id"
 
     class Imgs {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +imgurId: varchar(255) Unique
         +deleteHash: varchar(255)
         +path: varchar(255)
@@ -64,7 +64,7 @@ classDiagram
     }
 
     class Media {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +episode: smallint(255)
         +season: tinyint(255)
         +public_id: varchar(255) Unique
@@ -73,7 +73,7 @@ classDiagram
     }
 
     class Contents {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +title: varchar(255)
         +origin_title: varchar(255)
         +english_title: varchar(255)
@@ -87,7 +87,7 @@ classDiagram
         +type: enum('movie','tvshow')
         +release_date: date()
         +year: smallint(10)
-        +country_code: char(2)[] - FK
+        +country_code: varchar(2)[] - FK
         +genres_id: varchar(100)[] - FK
         +contributors[]: char(12)[] - FK
         +publish: boolean
@@ -100,52 +100,52 @@ classDiagram
     Contents --> Person : 'contributors[]'
 
     class Genres {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(100)
         +english_name: varchar(100) Unique
         +slug: varchar(100) Unique
     }
 
     class Country {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(100)
         +slug: varchar(100) Unique
-        +code: char(2) Unique
+        +code: varchar(2) Unique
     }
 
     class Person {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(255)
         +slug: varchar(255) Unique
         +profile_path: varchar(255)
-        +department_id: char(12) FK
+        +department_id: varchar(12) FK
     }
     Person --> Department: 'department_id'
 
     class Department {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(100)
         +slug: varchar(100) Unique
     }
 
     class Collections {
-        +_id: char(12) - PK
+        +_id: varchar(12) - PK
         +name: varchar(255)
         +description: text(255)
         +type: enum('topic','hot','features')
-        +content_id: char(12)[] - FK
+        +content_id: varchar(12)[] - FK
         +publish: boolean
-        +create_at: date
+        +create_at: timestamp
     }
     Collections --> Contents: 'content_id[]'
 
     class Reviews {
-        +_id: char(12) - PK
-        +user_id: char(12) - FK
-        +content_id: char(12) - FK
+        +_id: varchar(12) - PK
+        +user_id: varchar(12) - FK
+        +content_id: varchar(12) - FK
         +commend: text(255)
         +rating: decimal(2,1)
-        +review_at: date
+        +review_at: timestamp
     }
     Reviews --> Users: 'user_id'
     Reviews --> Contents: 'content_id'
@@ -160,7 +160,7 @@ config:
   look: classic
 ---
 erDiagram
-     USERS ||--|| IMGS : "has avatar"
+    USERS ||--|| IMGS : "has avatar"
     USERS ||--o{ FAVORITE : "makes"
     CONTENTS ||--o{ FAVORITE : "featured in"
     USERS ||--o{ HISTORY : "creates"
