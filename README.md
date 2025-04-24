@@ -47,4 +47,15 @@
       - ~~upload~~
       - ~~get~~
       - delete
-  - 
+  - ~~Cloudinary
+    - Upload
+    - Get~~
+
+### Schema Implement
+- Users
+- Content (TVSHOW/MOVIE)
+  - Genres - Actions, Drama,...
+  - Collections - 
+  - Topics
+  - Features
+- Media (Videos)

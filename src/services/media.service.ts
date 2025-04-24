@@ -1,31 +1,30 @@
-import { getDB } from "@db/client";
-import { avatars, NewAvatar } from "@schema/sql/avatar.schema";
+import { getDB } from "@db/client"
+import { NewMedia, media } from "@schema/sql/media.schema"
 import { eq } from "drizzle-orm";
 
-export const createAvatarRecord = async (
-    newAvatar: NewAvatar
+export const createMediaRecord = async (
+    newRecord: NewMedia
 ) => {
     const db = getDB();
     if (db.type === "mysql") {
-        // MySQL update
-        const [avatar] = await db.client.insert(avatars)
-            .values(newAvatar)
+        const [record] = await db.client.insert(media)
+            .values(newRecord)
             .execute()
+        return getMediaRecord(record.insertId)
 
-        return getAvatarRecord(avatar.insertId)
     } else {
-        return console.log("Haven't implemented getById")
+        return console.log("Haven't implemented")
     }
 }
 
-export const getAvatarRecord = async (id: number) => {
+export const getMediaRecord = async (id: number) => {
     const db = getDB();
     if (db.type === "mysql") {
-        const [avatar] = await db.client.select()
-            .from(avatars)
-            .where(eq(avatars.id, id)
+        const [record] = await db.client.select()
+            .from(media)
+            .where(eq(media.id, id)
             ).execute()
-        return avatar
+        return record
     } else {
         console.log("Haven't implemented getById")
     }

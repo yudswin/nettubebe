@@ -11,13 +11,3 @@ export interface ImgurResponse {
     success: boolean;
     status: number;
 }
-
-export interface ImageRecord {
-    id: number;
-    imgur_id: string;
-    deletehash: string;
-    url: string;
-    title?: string;
-    description?: string;
-    upload_date: Date;
-}

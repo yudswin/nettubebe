@@ -15,7 +15,7 @@ register({
         "@services/*": ["services/*"],
         "@schema/sql/*": ["models/mysql/*"],
         "@schema/pg/*": ["models/pg/*"],
-        "@types/*": ["libs/types/*"],
+        "@types/*": ["types/*"],
         "@libs/*": ["libs/*"]
     }
 });

@@ -23,7 +23,8 @@ export const getCorsOptions = (): CorsOptions => {
     // Default development settings - common local development URLs
     const developmentOrigins = [
         'http://localhost:3000',    // React default development server
-        'http://localhost:8080',    // Vue default development server
+        'http://localhost:3001',    // React default development server
+        'http://localhost:5173',    // Vite default development server
         'http://localhost:4200',    // Angular default development server
         'http://127.0.0.1:3000',    // Alternative localhost address
     ];

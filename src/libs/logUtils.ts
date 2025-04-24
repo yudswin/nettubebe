@@ -1,4 +1,4 @@
-import { Logger, LogLevel, LogMessage } from './types/logger';
+import { Logger, LogLevel, LogMessage } from "@interfaces/logger.types";
 
 /**
  * A console-based logger implementation that provides leveled logging with formatting.

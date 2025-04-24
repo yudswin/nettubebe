@@ -1,6 +1,7 @@
+import { getByEmail } from '@services/user.service';
 import { decodeToken, ITokenPayload, refreshAccessToken, verifyToken } from '@libs/jwtUtils';
 import logger from '@libs/logUtils';
-import { userRoles } from '@schema/sql/user.schema';
+import { User, userRoles } from '@schema/sql/user.schema';
 import { Request, Response, NextFunction } from 'express';
 import * as handler from './handler/tokenStatus';
 
@@ -56,7 +57,7 @@ const handleTokenVerification = async (
     try {
         const newAccessToken = await refreshAccessToken(refreshtoken);
         const newAccessTokenPayload = decodeToken(newAccessToken) as ITokenPayload;
-        
+
         if (options?.requireAdmin && !(newAccessTokenPayload.role === userRoles[1] || newAccessTokenPayload.role === userRoles[2])) {
             logger.warn(`Access denied for ${newAccessTokenPayload.email} with role ${newAccessTokenPayload.role}`, 'AuthMiddleware');
             res.status(403).json({ error: 'Access denied' });
@@ -86,4 +87,46 @@ export const authUser = async (req: Request, res: Response, next: NextFunction):
     if (result.decodedPayload) {
         next();
     }
+};
+
+
+type VerifiedUserResult =
+    | { success: true; response: User }
+    | { success: false; response: ReturnType<Response['status']> };
+
+export const verifyEmailFromHeaders = async (
+    req: Request,
+    res: Response,
+): Promise<VerifiedUserResult> => {
+    const { accesstoken, refreshtoken } = req.headers as {
+        accesstoken?: string;
+        refreshtoken?: string;
+    };
+
+    if (!accesstoken && !refreshtoken) {
+        logger.warn('Access token and refresh token missing', 'verifyUserFromHeaders');
+        const response = handler.missingTokens(res);
+        return { success: false, response };
+    }
+
+    const token = accesstoken || refreshtoken;
+    const decoded = token ? decodeToken(token) : null;
+
+    if (!decoded?.email) {
+        logger.warn('Invalid or malformed token', 'verifyUserFromHeaders');
+        const response = handler.invalidAccessToken(res);
+        return { success: false, response };
+    }
+
+    const existed = await getByEmail(decoded.email);
+    if (!existed) {
+        logger.warn('User does not exists', 'verifyUserFromHeaders');
+        const response = res.status(401).json({
+            error: 'User does not exists',
+            details: 'A user with this email address does not exist in the system'
+        });
+        return { success: false, response };
+    }
+
+    return { success: true, response: existed };
 };

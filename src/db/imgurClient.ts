@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import axios from "axios";
-import { ImgurResponse } from "src/interfaces/media.interface";
+import { ImgurResponse } from "@interfaces/media.types";
 import dotenv from "dotenv";
 
 dotenv.config()
