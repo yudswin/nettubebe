@@ -23,41 +23,36 @@ config:
 classDiagram
     class Users {
         +_id: varchar(12) - PK
-        +name: varchar(255) Unique
+        +name: varchar(255) 
         +email: varchar(255) Unique
         +password: varchar(60)
         +avatar_id: varchar(12) FK
-        +token: varchar(255)
+        +token?: varchar(255)
         +roles: enum('user', 'admin', 'moderator')
         +gender: enum('male', 'female', 'none')
-        +is_verified: bool
-        +is_active: bool
+        +is_verified: boolean
+        +is_active: boolean
     }
-    Users --> Imgs : "avatar_id" as avatar
 
-    class Favorite {
-        +_id: varchar(12) - PK
+    class Favorites {
+        PK: user_id and content_id
         +user_id: varchar(12) - FK
         +content_id: varchar(12) - FK
         +favorited_at: timestamp
     }
-    Favorite --> Users : "user_id"
-    Favorite --> Contents : "content_id"
 
     class History {
-        _id: varchar(12) - PK
+        PK: user_id and media_id
         user_id: varchar(12) - FK
         media_id: varchar(12) - FK
         watched_at: timestamp
-        progress: integer
+        progress?: integer
     }
-    History --> Users : "user_id"
-    History --> Media : "media_id"
 
     class Imgs {
         +_id: varchar(12) - PK
-        +imgurId: varchar(255) Unique
-        +deleteHash: varchar(255)
+        +imgur_id: varchar(255) Unique
+        +delete_hash: varchar(255)
         +path: varchar(255)
         +type: enum('avatar', 'person', 'thumbnail', 'banner')
         +metadata: json
@@ -65,9 +60,10 @@ classDiagram
 
     class Media {
         +_id: varchar(12) - PK
-        +episode: smallint(255)
-        +season: tinyint(255)
+        +content_id: varchar(12) - FK
         +public_id: varchar(255) Unique
+        +episode: integer
+        +season: integer
         +title: varchar(255)
         +audio_type: enum('subtitle','original','voiceover')
     }
@@ -78,26 +74,20 @@ classDiagram
         +origin_title: varchar(255)
         +english_title: varchar(255)
         +slug: varchar(255) Unique
-        +overview: text(255)
+        +overview: varchar(255)
         +imdb_rating: decimal(3,1)
-        +lastest_episode: smallint(255)
-        +lastest_season: tinyint(255)
+        +lastest_episode?: integer
+        +lastest_season?: integer
         +rating: decimal(2,1)
-        +runtime: smallint(10)
+        +runtime?: integer
         +type: enum('movie','tvshow')
-        +release_date: date()
-        +year: smallint(10)
-        +country_code: varchar(2)[] - FK
-        +genres_id: varchar(100)[] - FK
-        +contributors[]: char(12)[] - FK
+        +release_date: date
+        +year: integer
         +publish: boolean
-        +thumbnail_path: varchar(255)
-        +banner_path: varchar(255)
+        +thumbnail_path?: varchar(255)
+        +banner_path?: varchar(255)
         +status: enum('upcoming','finish','updating')
     }
-    Contents --> Country : 'country_code[]'
-    Contents --> Genres : 'genres_id[]'
-    Contents --> Person : 'contributors[]'
 
     class Genres {
         +_id: varchar(12) - PK
@@ -106,7 +96,7 @@ classDiagram
         +slug: varchar(100) Unique
     }
 
-    class Country {
+    class Countries {
         +_id: varchar(12) - PK
         +name: varchar(100)
         +slug: varchar(100) Unique
@@ -118,11 +108,9 @@ classDiagram
         +name: varchar(255)
         +slug: varchar(255) Unique
         +profile_path: varchar(255)
-        +department_id: varchar(12) FK
     }
-    Person --> Department: 'department_id'
 
-    class Department {
+    class Departments {
         +_id: varchar(12) - PK
         +name: varchar(100)
         +slug: varchar(100) Unique
@@ -131,24 +119,92 @@ classDiagram
     class Collections {
         +_id: varchar(12) - PK
         +name: varchar(255)
-        +description: text(255)
+        +slug: varchar(100)
+        +description: varchar(255)
         +type: enum('topic','hot','features')
-        +content_id: varchar(12)[] - FK
         +publish: boolean
         +create_at: timestamp
     }
-    Collections --> Contents: 'content_id[]'
 
     class Reviews {
         +_id: varchar(12) - PK
         +user_id: varchar(12) - FK
         +content_id: varchar(12) - FK
-        +commend: text(255)
-        +rating: decimal(2,1)
+        +comment: varchar(255)
+        +rating?: decimal(2,1)
         +review_at: timestamp
     }
-    Reviews --> Users: 'user_id'
-    Reviews --> Contents: 'content_id'
+
+    class ContentGenre{
+        PK: content_id and genre_id
+        +content_id: varchar(12) - FK
+        +genre_id: varchar(12) - FK
+    }
+
+    class ContentCountry{
+        PK: content_id and country_id
+        +content_id: varchar(12) - FK
+        +country_id: varchar(12) - FK
+    }
+
+    class CollectionContent{
+        PK: collection_id and content_id
+        +collection_id: varchar(12) - FK
+        +content_id: varchar(12) - FK
+        +rank: integer
+        +added_at: timestamp
+    }
+
+    class PersonDepartment{
+        PK: collection_id and content_id
+        +person_id: varchar(12) - FK
+        +department_id: varchar(12) - FK
+    }
+    class Directors{
+        PK: person_id and content_id
+        +person_id: varchar(12) - FK
+        +content_id: varchar(12) - FK
+        +rank: integer
+    }
+
+    class Casts{
+        PK: person_id and content_id
+        +person_id: varchar(12) - FK
+        +content_id: varchar(12) - FK
+        +character: varchar(255)
+        +rank: integer 
+    }
+
+    Users --> Imgs: "avatar_id"
+
+    History --> Users: "user_id"
+    History --> Media: "media_id"
+
+    Favorites --> Users: "user_id"
+    Favorites --> Contents: "content_id"
+
+    Media --> Contents: "content_id"
+
+    Reviews --> Users: "user_id"
+    Reviews --> Contents: "content_id"
+
+    CollectionContent --> Collections: "collection_id"
+    CollectionContent --> Contents: "content_id"
+
+    ContentCountry --> Contents: "content_id"
+    ContentCountry --> Countries: "country_id"
+
+    ContentGenre --> Contents: "content_id"
+    ContentGenre --> Genres: "genre_id"
+
+    PersonDepartment --> Person: "person_id"
+    PersonDepartment --> Departments: "departments_id"
+
+    Directors --> Person: "person_id"
+    Directors --> Contents: "content_id"
+
+    Casts --> Person: "person_id"
+    Casts --> Contents: "content_id"
 ```
 
 ## Entities Relationship Diagram
@@ -160,17 +216,30 @@ config:
   look: classic
 ---
 erDiagram
-    USERS ||--|| IMGS : "has avatar"
-    USERS ||--o{ FAVORITE : "makes"
-    CONTENTS ||--o{ FAVORITE : "featured in"
-    USERS ||--o{ HISTORY : "creates"
-    MEDIA ||--o{ HISTORY : "tracked in"
-    CONTENTS ||--o{ MEDIA : "has"
-    PERSON ||--o{ CONTENTS : "contributes to"
-    PERSON }|--|| DEPARTMENT : "belongs to"
-    CONTENTS ||--o{ COUNTRY : "available in"
-    CONTENTS ||--o{ GENRES : "categorized under"
-    COLLECTIONS ||--o{ CONTENTS : "contains"
-    USERS ||--o{ REVIEWS : "writes"
-    CONTENTS ||--o{ REVIEWS : "receives"
+USERS ||--|| IMGS : "has avatar"
+USERS ||--o{ HISTORY : "has history"
+USERS ||--o{ FAVORITES : "has favorites"
+USERS ||--o{ REVIEWS : "has reviews"
+
+FAVORITES }o--|| CONTENTS : "favorites content"
+HISTORY }o--|| MEDIA : "watched media"
+
+CONTENTS ||--|{ CASTS : "has cast"
+CONTENTS ||--|{ DIRECTORS : "has directors"
+CONTENTS ||--|{ CONTENT_GENRE : "has genres"
+CONTENTS ||--|{ CONTENT_COUNTRY : "has countries"
+CONTENTS ||--o{ REVIEWS : "reviewed by users"
+CONTENTS ||--o{ MEDIA : "has media"
+
+COLLECTION_CONTENT }o--|| COLLECTIONS : "belongs to collection"
+COLLECTION_CONTENT }o--|| CONTENTS : "belongs to content"
+
+COUNTRIES ||--o{ CONTENT_COUNTRY : "has contents"
+GENRES ||--o{ CONTENT_GENRE : "has contents"
+
+PERSON ||--o{ PERSON_DEPARTMENT : "has departments"
+PERSON ||--o{ CASTS : "acts in content"
+PERSON ||--o{ DIRECTORS : "directs content"
+
+DEPARTMENTS ||--o{ PERSON_DEPARTMENT : "has persons"
 ```
