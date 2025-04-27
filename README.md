@@ -9,6 +9,23 @@
 
 ---
 
+POST => localhost/api/verifyToken  
+req.header: accessToken, refreshToken
+jwt => verify => res.body {
+   "status": true,
+   "msg": "Đã thành công!"
+}
+
+res.body {
+   "status": false,
+   "msg": "ErrorLog!"
+}
+
+verify: token?, expired?, provided access+refresh
+(+) decode: accessToken? => status 200OK true, msg success
+  (-) refreshToken? =>status 200OK true, msg success, accessToken
+=> Return 401 ~ 404 false, msg token expired
+
 ### TASK NOTE (alt + s: done)
 - Services
   - Users
@@ -51,11 +68,16 @@
     - Upload
     - Get~~
 
-### Schema Implement
-- Users
-- Content (TVSHOW/MOVIE)
-  - Genres - Actions, Drama,...
-  - Collections - 
-  - Topics
-  - Features
-- Media (Videos)
+### RewriteSchema
+Users
+Favorites
+History
+Imgs
+Media
+Contents
+Genres
+Countries
+Person
+Departments
+Collections
+Reviews
