@@ -1,52 +1,30 @@
-import { users as pgUsers } from "@schema/pg/user.schema";
-import { NewUser, users as sqlUsers, UserRole } from "@schema/sql/user.schema";
+import { NewUser, users as sqlUsers, UserRole } from "@schema/sql/users.schema";
 import { getDB } from '@db/client';
 import { eq } from "drizzle-orm";
 
-export const createUser = async (
-    // name: string, 
-    // age: number = 0, 
-    // email: string, 
-    userData: NewUser
-) => {
+export const createUser = async (userData: NewUser) => {
     const db = getDB();
 
-    // MySQL specific insert
     if (db.type === "mysql") {
         const [newUser] = await db.client.insert(sqlUsers)
             .values(userData)
-            .execute()
-
-        return getById(newUser.insertId)
-    }
-
-    // PostgreSQL specific insert
-    else if (db.type === "postgres") {
-        // const user: typeof pgUsers.$inferInsert = {
-        //     name: name,
-        //     email: email,
-        //     age: age,
-        // };
-        // const result = await db.client.insert(pgUsers)
-        //     .values(user)
-        //     .returning({ id: pgUsers.id });
-        // return result[0];
-        return
+            .execute();
+        return getById(userData._id)
     }
 };
 
-export const getById = async (id: number) => {
+export const getById = async (id: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         const [user] = await db.client.select()
             .from(sqlUsers)
-            .where(eq(sqlUsers.id, id)
-            ).execute()
-        return user
+            .where(eq(sqlUsers._id, id))
+            .execute();
+        return user;
     } else {
         console.log("Haven't implemented getById")
     }
-}
+};
 
 export const getByEmail = async (email: string) => {
     const db = getDB();
@@ -54,43 +32,42 @@ export const getByEmail = async (email: string) => {
         const [user] = await db.client
             .select()
             .from(sqlUsers)
-            .where(eq(sqlUsers.email, email)
-            ).execute()
-        return user
+            .where(eq(sqlUsers.email, email))
+            .execute();
+        return user;
     } else {
         console.log("Haven't implemented getByEmail")
     }
-}
+};
 
 export const getByEmailWithoutPass = async (email: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         const [user] = await db.client
             .select({
-                id: sqlUsers.id,
-                username: sqlUsers.username,
+                name: sqlUsers.name,
                 email: sqlUsers.email,
-                joinDate: sqlUsers.joinDate,
                 avatarId: sqlUsers.avatarId,
-                refreshToken: sqlUsers.refreshToken,
-                role: sqlUsers.role
+                token: sqlUsers.token,
+                roles: sqlUsers.roles,
+                gender: sqlUsers.gender,
+                isVerified: sqlUsers.isVerified,
+                isActive: sqlUsers.isActive
             })
             .from(sqlUsers)
-            .where(eq(sqlUsers.email, email)
-            ).execute()
-        return user
+            .where(eq(sqlUsers.email, email))
+            .execute();
+        return user;
     } else {
         console.log("Haven't implemented getByEmail")
     }
-}
+};
 
 export const getUsers = async () => {
     const db = getDB();
     try {
         if (db.type === "mysql") {
-            return await db.client.select().from(sqlUsers);
-        } else {
-            return await db.client.select().from(pgUsers);
+            return await db.client.select().from(sqlUsers).execute();
         }
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -99,57 +76,38 @@ export const getUsers = async () => {
 };
 
 export const updateUser = async (
-    id: number,
+    id: string,
     updateData: Partial<{
-        username: string;
+        name: string;
         email: string;
         password: string;
-        avatarId: number | null;
-        accessToken: string | null;
-        refreshToken: string | null;
-        role: UserRole;
+        avatarId: string | null;
+        token: string | null;
+        gender: 'male' | 'female' | 'none';
     }>
 ) => {
     const db = getDB();
     if (db.type === "mysql") {
-        // MySQL update
         await db.client
             .update(sqlUsers)
             .set(updateData)
-            .where(eq(sqlUsers.id, id));
+            .where(eq(sqlUsers._id, id))
+            .execute();
 
         return { success: true };
-    } else {
-        // PostgreSQL update 
-        const result = await db.client
-            .update(pgUsers)
-            .set(updateData)
-            .where(eq(pgUsers.id, id))
-            .returning({ id: pgUsers.id });
-
-        return result[0];
     }
 };
 
-export const deleteUser = async (id: number) => {
+export const deleteUser = async (id: string) => {
     const db = getDB();
 
     try {
         if (db.type === "mysql") {
-            // MySQL delete
             await db.client
                 .delete(sqlUsers)
-                .where(eq(sqlUsers.id, id));
-
+                .where(eq(sqlUsers._id, id))
+                .execute();
             return { success: true };
-        } else {
-            // PostgreSQL delete
-            const result = await db.client
-                .delete(pgUsers)
-                .where(eq(pgUsers.id, id))
-                .returning({ id: pgUsers.id });
-
-            return result[0];
         }
     } catch (error) {
         console.error('Error deleting user:', error);

@@ -1,4 +1,4 @@
-import { UserRole } from '@schema/sql/user.schema';
+import { UserRole } from '@schema/sql/users.schema';
 import jwt from 'jsonwebtoken';
 import { JwtPayload, SignOptions, VerifyOptions } from 'jsonwebtoken';
 
@@ -62,15 +62,15 @@ export function decodeToken(token: string): ITokenPayload | null {
 }
 
 
-export function generateAuthTokens(email: string, role: UserRole) {
+export function generateAuthTokens(id: string, email: string, role: UserRole) {
     const accessToken = generateToken(
-        { email, role },
-        { expiresIn: '60s' }
+        { id, email, role },
+        { expiresIn: '1d' }
     );
 
     const refreshToken = generateToken(
-        { email, role },
-        { expiresIn: '7d' }
+        { id, email, role },
+        { expiresIn: '15d' }
     );
 
     return { accessToken, refreshToken };

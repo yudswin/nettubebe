@@ -1,9 +1,10 @@
 import { getByEmail } from '@services/user.service';
 import { decodeToken, ITokenPayload, refreshAccessToken, verifyToken } from '@libs/jwtUtils';
 import logger from '@libs/logUtils';
-import { User, userRoles } from '@schema/sql/user.schema';
+import { User, UserRole } from '@schema/sql/users.schema';
 import { Request, Response, NextFunction } from 'express';
-import * as handler from './handler/tokenStatus';
+import { responseHandler } from '@libs/responseHelper';
+;
 
 type AuthOptions = {
     requireAdmin?: boolean;
@@ -14,15 +15,20 @@ const handleTokenVerification = async (
     res: Response,
     options?: AuthOptions
 ): Promise<{ newAccessToken?: string; decodedPayload?: ITokenPayload }> => {
+    const context = 'AuthMiddleware';
     const { accesstoken, refreshtoken } = req.headers as {
         accesstoken?: string;
         refreshtoken?: string;
     };
 
     if (!accesstoken || !refreshtoken) {
-        logger.warn('Access token or refresh token missing', 'AuthMiddleware');
-        handler.missingTokens(res);
-        return {};
+        return responseHandler(res, {
+            success: false,
+            statusCode: 401,
+            error: 'Authentication required',
+            details: 'Both access token and refresh token are required',
+            context
+        }), {};
     }
 
     let accessTokenPayload: ITokenPayload | undefined;
@@ -31,9 +37,12 @@ const handleTokenVerification = async (
         return { decodedPayload: accessTokenPayload };
     } catch (accessError) {
         if (!(accessError instanceof Error) || !accessError.message.includes('expired')) {
-            logger.warn('Invalid access token', 'AuthMiddleware');
-            handler.invalidAccessToken(res);
-            return {};
+            return responseHandler(res, {
+                success: false,
+                statusCode: 401,
+                error: 'Invalid access token',
+                context
+            }), {};
         }
         accessTokenPayload = decodeToken(accesstoken) as ITokenPayload;
     }
@@ -43,34 +52,49 @@ const handleTokenVerification = async (
         refreshTokenPayload = verifyToken(refreshtoken) as ITokenPayload;
     } catch (refreshError) {
         const isExpired = (refreshError instanceof Error) && refreshError.message.includes('expired');
-        isExpired ? handler.expiredRefreshToken(res) : handler.invalidRefreshToken(res);
-        logger.warn(isExpired ? 'Refresh token expired' : 'Invalid refresh token', 'AuthMiddleware');
-        return {};
+        return responseHandler(res, {
+            success: false,
+            statusCode: 401,
+            error: isExpired ? 'Refresh token expired' : 'Invalid refresh token',
+            details: isExpired ? 'Please re-authenticate' : 'Invalid token provided',
+            context
+        }), {};
     }
 
     if (!accessTokenPayload || accessTokenPayload.email !== refreshTokenPayload.email) {
-        logger.warn(`Token mismatch: ${accessTokenPayload?.email} vs ${refreshTokenPayload.email}`, 'AuthMiddleware');
-        handler.tokenMismatch(res);
-        return {};
+        return responseHandler(res, {
+            success: false,
+            statusCode: 401,
+            error: 'Token mismatch',
+            details: `Email mismatch between tokens: ${accessTokenPayload?.email} vs ${refreshTokenPayload.email}`,
+            context
+        }), {};
     }
 
     try {
         const newAccessToken = await refreshAccessToken(refreshtoken);
         const newAccessTokenPayload = decodeToken(newAccessToken) as ITokenPayload;
-
-        if (options?.requireAdmin && !(newAccessTokenPayload.role === userRoles[1] || newAccessTokenPayload.role === userRoles[2])) {
-            logger.warn(`Access denied for ${newAccessTokenPayload.email} with role ${newAccessTokenPayload.role}`, 'AuthMiddleware');
-            res.status(403).json({ error: 'Access denied' });
-            return {};
+        if (newAccessTokenPayload.role) {
+            if (options?.requireAdmin && !['admin', 'moderator'].includes(newAccessTokenPayload.role)) {
+                return responseHandler(res, {
+                    success: false,
+                    statusCode: 403,
+                    error: 'Access denied',
+                    details: `Insufficient privileges for ${newAccessTokenPayload.email} with role ${newAccessTokenPayload.role}`,
+                    context
+                }), {};
+            }
         }
-
         res.setHeader('New-Access-Token', newAccessToken);
-        logger.info(`Issued new access token for ${newAccessTokenPayload.email}`, 'AuthMiddleware');
         return { newAccessToken, decodedPayload: newAccessTokenPayload };
     } catch (error) {
-        logger.error('Token refresh failed', 'AuthMiddleware');
-        handler.invalidAccessToken(res);
-        return {};
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Token refresh failed',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        }), {};
     }
 };
 
@@ -89,44 +113,67 @@ export const authUser = async (req: Request, res: Response, next: NextFunction):
     }
 };
 
-
 type VerifiedUserResult =
-    | { success: true; response: User }
-    | { success: false; response: ReturnType<Response['status']> };
+    | { success: true; user: User }
+    | { success: false };
 
 export const verifyEmailFromHeaders = async (
     req: Request,
     res: Response,
 ): Promise<VerifiedUserResult> => {
+    const context = 'verifyUserFromHeaders';
     const { accesstoken, refreshtoken } = req.headers as {
         accesstoken?: string;
         refreshtoken?: string;
     };
 
     if (!accesstoken && !refreshtoken) {
-        logger.warn('Access token and refresh token missing', 'verifyUserFromHeaders');
-        const response = handler.missingTokens(res);
-        return { success: false, response };
+        responseHandler(res, {
+            success: false,
+            statusCode: 401,
+            error: 'Authentication required',
+            details: 'No authentication tokens provided',
+            context
+        });
+        return { success: false };
     }
 
     const token = accesstoken || refreshtoken;
     const decoded = token ? decodeToken(token) : null;
 
     if (!decoded?.email) {
-        logger.warn('Invalid or malformed token', 'verifyUserFromHeaders');
-        const response = handler.invalidAccessToken(res);
-        return { success: false, response };
-    }
-
-    const existed = await getByEmail(decoded.email);
-    if (!existed) {
-        logger.warn('User does not exists', 'verifyUserFromHeaders');
-        const response = res.status(401).json({
-            error: 'User does not exists',
-            details: 'A user with this email address does not exist in the system'
+        responseHandler(res, {
+            success: false,
+            statusCode: 401,
+            error: 'Invalid token',
+            details: 'Token missing or malformed',
+            context
         });
-        return { success: false, response };
+        return { success: false };
     }
 
-    return { success: true, response: existed };
+    try {
+        const existed = await getByEmail(decoded.email);
+        if (!existed) {
+            responseHandler(res, {
+                success: false,
+                statusCode: 404,
+                error: 'User not found',
+                details: `No user exists with email: ${decoded.email}`,
+                context
+            });
+            return { success: false };
+        }
+
+        return { success: true, user: existed };
+    } catch (error) {
+        responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Server error',
+            details: error instanceof Error ? error.message : 'Failed to verify user',
+            context
+        });
+        return { success: false };
+    }
 };

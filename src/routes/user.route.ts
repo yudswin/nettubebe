@@ -16,6 +16,6 @@ router.post('/auth/login', userController.login);
 router.get('/getAll', middleware.authDev, userController.getUsers);
 router.get('/me', middleware.authUser, userController.getSelf);
 
-router.post('/media/upload', middleware.authUser, upload.single('image'), imgurController.uploadAvatar)
+// router.post('/media/upload', middleware.authUser, upload.single('image'), imgurController.uploadAvatar)
 
 export default router;
