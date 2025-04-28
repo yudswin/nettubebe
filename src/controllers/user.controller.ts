@@ -179,9 +179,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 export const getUsers = async (req: Request, res: Response): Promise<any> => {
     try {
         const result = await userService.getUsers();
-        return responseHandler(res, {
+        if (result) return responseHandler(res, {
             success: true,
-            statusCode: 200,
+            statusCode: result?.length > 1 ? 200 : 204,
             result,
             context
         });

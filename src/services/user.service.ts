@@ -65,14 +65,9 @@ export const getByEmailWithoutPass = async (email: string) => {
 
 export const getUsers = async () => {
     const db = getDB();
-    try {
-        if (db.type === "mysql") {
-            return await db.client.select().from(sqlUsers).execute();
-        }
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        throw error;
-    }
+    if (db.type === "mysql") {
+        return await db.client.select().from(sqlUsers).execute();
+    } else return console.error('Error fetching users');
 };
 
 export const updateUser = async (
@@ -93,24 +88,17 @@ export const updateUser = async (
             .set(updateData)
             .where(eq(sqlUsers._id, id))
             .execute();
-
         return { success: true };
     }
 };
 
 export const deleteUser = async (id: string) => {
     const db = getDB();
-
-    try {
-        if (db.type === "mysql") {
-            await db.client
-                .delete(sqlUsers)
-                .where(eq(sqlUsers._id, id))
-                .execute();
-            return { success: true };
-        }
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        throw new Error('Failed to delete user');
-    }
+    if (db.type === "mysql") {
+        await db.client
+            .delete(sqlUsers)
+            .where(eq(sqlUsers._id, id))
+            .execute();
+        return { success: true };
+    } else return console.error('Error deleting user');
 };
