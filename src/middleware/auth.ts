@@ -1,4 +1,4 @@
-import { getByEmail } from '@services/user.service';
+import { getByEmail, getById } from '@services/user.service';
 import { decodeToken, ITokenPayload, refreshAccessToken, verifyToken } from '@libs/jwtUtils';
 import logger from '@libs/logUtils';
 import { User, UserRole } from '@schema/sql/users.schema';
@@ -141,7 +141,7 @@ export const verifyEmailFromHeaders = async (
     const token = accesstoken || refreshtoken;
     const decoded = token ? decodeToken(token) : null;
 
-    if (!decoded?.email) {
+    if (!decoded?.id) {
         responseHandler(res, {
             success: false,
             statusCode: 401,
@@ -153,7 +153,7 @@ export const verifyEmailFromHeaders = async (
     }
 
     try {
-        const existed = await getByEmail(decoded.email);
+    const existed = await getById(decoded.id);
         if (!existed) {
             responseHandler(res, {
                 success: false,

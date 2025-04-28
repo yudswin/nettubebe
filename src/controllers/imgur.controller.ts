@@ -1,94 +1,186 @@
 import { imgurClient } from '@db/imgurClient';
 import { Request, Response } from 'express';
-import logger from "@libs/logUtils";
 import * as statusReturn from "@middleware/handler/tokenStatus";
 import * as userService from "@services/user.service"
 import * as avatarService from "@services/avatar.service"
 import { verifyEmailFromHeaders } from '@middleware/auth';
+import { responseHandler } from '@libs/responseHelper';
+import { NewImage } from '@schema/sql/imgs.schema';
+import { nanoid } from 'nanoid';
+import { decodeToken } from '@libs/jwtUtils';
 
-
+const context = "ImgurController"
 export const uploadAvatar = async (req: Request, res: Response): Promise<any> => {
     try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'No image file provided'
-            });
-        }
-        const result = await verifyEmailFromHeaders(req, res); // pass true if image required
-        if (!result.success) {
-            logger.warn('Invalid or malformed token', 'getSelf');
-            return statusReturn.invalidAccessToken(res);
-        }
-
-        const decoded = result.response;
-        if (!decoded?.email) {
-            logger.warn('Invalid or malformed token', 'getSelf');
-            return statusReturn.invalidAccessToken(res);
-        }
-
-        const imgurResponse = await imgurClient.uploadImage(
-            req.file.buffer,
-            req.file.originalname,
-            `Avatar for ${decoded.email}`,
-        )
-
-        if (!imgurResponse.success) {
-            return res.status(502).json({
-                success: false,
-                error: 'Image hosting failed',
-                details: imgurResponse.data
-            });
-        }
-
-        const avatarData = {
-            userId: decoded.id,
-            imgurId: imgurResponse.data.id,
-            deletehash: imgurResponse.data.deletehash,
-            url: imgurResponse.data.link,
-            type: 'avatar',
-            metadata: {
-                width: imgurResponse.data.width,
-                height: imgurResponse.data.height,
-                size: req.file.size
-            }
-        }
-        const storeAvatar = await avatarService.createAvatarRecord(avatarData)
-        if (!storeAvatar) {
-            return res.status(502).json({
-                success: false,
-                error: 'Avatar stored failed to user',
-                details: imgurResponse.data
-            });
-        }
-
-        const updateUserAvatar = await userService.updateUser(decoded.id, { avatarId: storeAvatar.id })
-        if (!updateUserAvatar) {
-            return res.status(502).json({
-                success: false,
-                error: 'Avatar stored failed to user',
-                details: imgurResponse.data
-            });
-        }
-
-        return res.json({
-            success: true,
-            avatarUrl: imgurResponse.data.link,
-            metadata: {
-                id: storeAvatar.id,
-                uploadedAt: storeAvatar.createdAt,
-                dimensions: {
-                    width: imgurResponse.data.width,
-                    height: imgurResponse.data.height
+        if (req.file) {
+            const result = await verifyEmailFromHeaders(req, res);
+            if (result.success) {
+                const imgurResponse = await imgurClient.uploadImage(
+                    req.file.buffer,
+                    req.file.originalname,
+                )
+                if (!imgurResponse.success) {
+                    return responseHandler(res, {
+                        success: false,
+                        statusCode: 502,
+                        error: 'User does not exists',
+                        details: {
+                            error: 'Image hosting failed',
+                            details: imgurResponse.data
+                        },
+                        context
+                    });
                 }
+                const avatarData: NewImage = {
+                    _id: nanoid(12),
+                    imgurId: imgurResponse.data.id,
+                    deleteHash: imgurResponse.data.deletehash,
+                    path: imgurResponse.data.link,
+                    type: 'avatar',
+                    metadata: {
+                        width: imgurResponse.data.width,
+                        height: imgurResponse.data.height,
+                        size: req.file.size
+                    }
+                }
+                const storeAvatar = await avatarService.createAvatarRecord(avatarData)
+                if (!storeAvatar) {
+                    return responseHandler(res, {
+                        success: false,
+                        statusCode: 502,
+                        error: 'Avatar stored failed to user.',
+                        details: imgurResponse.data,
+                        context
+                    });
+                }
+                const updateUserAvatar = await userService.updateUser(result.user._id, { avatarId: storeAvatar._id })
+                if (!updateUserAvatar) {
+                    return responseHandler(res, {
+                        success: false,
+                        statusCode: 502,
+                        error: 'Avatar stored failed to user.',
+                        details: imgurResponse.data,
+                        context
+                    });
+                }
+                return responseHandler(res, {
+                    success: true,
+                    statusCode: 200,
+                    message: 'Avatar stored failed to user',
+                    result: {
+                        avatarUrl: imgurResponse.data.link,
+                    },
+                    context
+                })
             }
-        });
-
+        } else {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'No image file provided',
+                context
+            });
+        }
     } catch (error) {
-        logger.error(`Error in getSelf: ${error instanceof Error ? error.message : String(error)}`);
-        return res.status(500).json({
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
             error: 'Internal server error',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+}
+
+export const deleteAvatar = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { newAccessToken, accesstoken } = req.headers as {
+            newAccessToken: string,
+            accesstoken: string
+        }
+        const token = newAccessToken || accesstoken;
+        if (!token) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Missing tokens fields',
+                context
+            });
+        }
+        const decoded = decodeToken(token)
+        if (!decoded) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 401,
+                error: 'Invalid or expired token.',
+                context
+            });
+        }
+
+        const existed = await userService.getById(decoded.id);
+        if (!existed) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'User does not exists.',
+                context
+            });
+        }
+
+        if (!existed.avatarId) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'User does not have any avatar exists.',
+                context
+            });
+        }
+
+        const avatar = await avatarService.getAvatarRecord(existed.avatarId)
+        if (!avatar) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Avatar does not exists.',
+                context
+            });
+        }
+
+        const imgurDelete = await imgurClient.deleteImage(avatar.deleteHash)
+        if (!imgurDelete) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 501,
+                error: 'Imgur delete error.',
+                details: imgurClient,
+                context
+            });
+        }
+
+        const userAvatarDelete = await avatarService.deleteAvatar(avatar._id)
+        if (!userAvatarDelete) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 500,
+                error: 'Database delete error.',
+                details: imgurClient,
+                context
+            });
+        }
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            message: 'Avatar deleted.',
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
         });
     }
 }

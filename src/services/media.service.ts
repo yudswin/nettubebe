@@ -22,8 +22,8 @@ export const getMediaRecord = async (id: number) => {
     if (db.type === "mysql") {
         const [record] = await db.client.select()
             .from(media)
-            .where(eq(media.id, id)
-            ).execute()
+            .where(eq(media._id, id))
+            .execute()
         return record
     } else {
         console.log("Haven't implemented getById")
