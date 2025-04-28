@@ -92,7 +92,7 @@ export const updateUser = async (
             .where(eq(sqlUsers._id, id))
             .execute();
         return { success: true };
-    }
+    } else return console.error('Error updating user');
 };
 
 export const deleteUser = async (id: string) => {
