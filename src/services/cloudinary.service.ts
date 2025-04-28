@@ -33,7 +33,23 @@ export const uploadMedia = async (
         // Convert buffer to readable stream
         const readableStream = new Readable();
         readableStream.push(fileBuffer);
-        readableStream.push(null); 
+        readableStream.push(null);
         readableStream.pipe(uploadStream);
     });
 }
+
+export const deleteMedia = async (publicId: string) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(
+            publicId,
+            {
+                resource_type: 'video',
+                invalidate: true
+            },
+            (error, result) => {
+                if (result) resolve(result);
+                else reject(error);
+            }
+        );
+    });
+};

@@ -24,31 +24,10 @@ export const getStreamingUrls = async (params: GetStreamingUrlParams) => {
                     { quality: 'auto', width: 1280, height: 720 },
                     { quality: 'auto', width: 854, height: 480 }
                 ]
-            }),
-            dash: cloudinary.url(publicId, {
-                ...baseOptions,
-                streaming_profile: 'hd',
-                format: 'mpd',
-            }),
-            thumbnail: cloudinary.url(publicId, {
-                ...baseOptions,
-                format: 'jpg',
-                transformation: [
-                    { width: 1280, height: 720, crop: 'fill' },
-                    { effect: 'blur:1000', opacity: 60 },
-                    { overlay: 'video:play', width: 100, flags: 'layer_apply' }
-                ]
-            }),
-            preview: generatePreviewSprite(publicId),
-            resolutions: [
-                { width: 1920, height: 1080 },
-                { width: 1280, height: 720 },
-                { width: 854, height: 480 }
-            ]
+            })
         };
     } catch (error) {
         logger.warn(`Failed to generate streaming URLs:  ${error}`, 'StreamService')
-
     }
 }
 
@@ -64,7 +43,7 @@ export const generatePreviewSprite = async (publicId: string) => {
     });
 }
 
-export const getManifest = async ( publicId: string, format: 'hls' | 'dash') => {
+export const getManifest = async (publicId: string, format: 'hls' | 'dash') => {
     const manifestUrl = cloudinary.url(publicId, {
         resource_type: 'video',
         format: format === 'hls' ? 'm3u8' : 'mpd',

@@ -6,7 +6,7 @@ import streamRouter from "@routes/stream.route"
 const router = Router();
 
 router.use('/api/user', userRouter);
-// router.use('/api/media', mediaRouter)
-// router.use('/api/', streamRouter);
+router.use('/api/media', mediaRouter)
+router.use('/v1/', streamRouter);
 
 export const routes = router;

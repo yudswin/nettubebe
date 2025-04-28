@@ -1,7 +1,7 @@
 import { mysqlTable, varchar, int, mysqlEnum } from "drizzle-orm/mysql-core";
 import { contents } from "./contents.schema";
 
-const audioType = ['subtitle', 'original', 'voiceover'] as const
+export const audioType = ['subtitle', 'original', 'voiceover'] as const
 
 export const media = mysqlTable('media', {
     _id: varchar('_id', { length: 12 }).primaryKey(),

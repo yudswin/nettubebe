@@ -1,27 +1,49 @@
 import { Request, Response } from 'express';
 import * as streamService from '@services/stream.service';
+import * as mediaService from '@services/media.service'
 import logger from '@libs/logUtils';
+import { responseHandler } from '@libs/responseHelper';
 
-export const getStreamingUrls = async (req: Request, res: Response) => {
+const context = "StreamingController"
+export const getStreamingUrls = async (req: Request, res: Response): Promise<any> => {
     try {
         const { videoId } = req.params;
+        if (!videoId) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'videoId is required'
+            })
+        }
+
+        const existedMedia = await mediaService.getMediaRecord(videoId)
+        if (!existedMedia) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Media with given id does not existed.'
+            })
+        }
 
         const urls = await streamService.getStreamingUrls({
-            publicId: `${videoId}`,
+            publicId: `${existedMedia.publicId}`,
             expiresAt: req.query.expiresAt
                 ? parseInt(req.query.expiresAt as string)
                 : undefined
         });
 
-        res.json({
+        return responseHandler(res, {
             success: true,
-            data: urls
-        });
+            statusCode: 200,
+            result: urls
+        })
     } catch (error) {
-        logger.warn(`Error Streaming:  ${error}`, 'StreamController')
-        res.status(500).json({
+        return responseHandler(res, {
             success: false,
-            error: 'Failed to get streaming URLs'
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
         });
     }
 };
