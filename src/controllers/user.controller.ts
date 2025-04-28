@@ -1,6 +1,7 @@
 import { decodeToken, generateAuthTokens } from '@libs/jwtUtils';
 import { Request, Response } from 'express';
 import * as userService from "@services/user.service"
+import * as avatarService from "@services/avatar.service"
 import { hashPassword, verifyPassword } from '@libs/bcryptUtils';
 import { responseHandler } from '@libs/responseHelper';
 import { NewUser } from '@schema/sql/users.schema';
@@ -207,7 +208,7 @@ export const updateUser = async (req: Request, res: Response): Promise<any> => {
             token,
             gender
         } = req.body
-        
+
         if (!name && !email && !password && !avatarId && !token && !gender) {
             return responseHandler(res, {
                 success: false,
@@ -271,7 +272,7 @@ export const getSelf = async (req: Request, res: Response): Promise<any> => {
                     success: true,
                     statusCode: 200,
                     result: {
-                        ...user
+                        user
                     },
                     context
                 });

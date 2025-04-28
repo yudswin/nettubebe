@@ -1,6 +1,5 @@
 import { imgurClient } from '@db/imgurClient';
 import { Request, Response } from 'express';
-import * as statusReturn from "@middleware/handler/tokenStatus";
 import * as userService from "@services/user.service"
 import * as avatarService from "@services/avatar.service"
 import { verifyEmailFromHeaders } from '@middleware/auth';
@@ -48,7 +47,7 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<any> =>
                     return responseHandler(res, {
                         success: false,
                         statusCode: 502,
-                        error: 'Avatar stored failed to user.',
+                        error: 'Avatar record stored failed.',
                         details: imgurResponse.data,
                         context
                     });
@@ -66,7 +65,7 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<any> =>
                 return responseHandler(res, {
                     success: true,
                     statusCode: 200,
-                    message: 'Avatar stored failed to user',
+                    message: 'User avatar updated.',
                     result: {
                         avatarUrl: imgurResponse.data.link,
                     },
@@ -157,6 +156,7 @@ export const deleteAvatar = async (req: Request, res: Response): Promise<any> =>
             });
         }
 
+        
         const userAvatarDelete = await avatarService.deleteAvatar(avatar._id)
         if (!userAvatarDelete) {
             return responseHandler(res, {

@@ -1,6 +1,7 @@
 import { NewUser, users as sqlUsers, UserRole } from "@schema/sql/users.schema";
 import { getDB } from '@db/client';
 import { eq } from "drizzle-orm";
+import { imgs } from "@schema/sql/imgs.schema";
 
 export const createUser = async (userData: NewUser) => {
     const db = getDB();
@@ -52,10 +53,11 @@ export const getByEmailWithoutPass = async (email: string) => {
                 roles: sqlUsers.roles,
                 gender: sqlUsers.gender,
                 isVerified: sqlUsers.isVerified,
-                isActive: sqlUsers.isActive
+                isActive: sqlUsers.isActive,
+                imgs
             })
             .from(sqlUsers)
-            .where(eq(sqlUsers.email, email))
+            .where(eq(sqlUsers.email, email)).leftJoin(imgs, (eq(sqlUsers.avatarId, imgs._id)))
             .execute();
         return user;
     } else {
@@ -66,7 +68,8 @@ export const getByEmailWithoutPass = async (email: string) => {
 export const getUsers = async () => {
     const db = getDB();
     if (db.type === "mysql") {
-        return await db.client.select().from(sqlUsers).execute();
+        return await db.client.select().from(sqlUsers).leftJoin(imgs, (eq(sqlUsers.avatarId, imgs._id)))
+            .execute();
     } else return console.error('Error fetching users');
 };
 
