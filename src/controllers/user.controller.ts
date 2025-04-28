@@ -1,7 +1,6 @@
 import { decodeToken, generateAuthTokens } from '@libs/jwtUtils';
 import { Request, Response } from 'express';
 import * as userService from "@services/user.service"
-import * as avatarService from "@services/avatar.service"
 import { hashPassword, verifyPassword } from '@libs/bcryptUtils';
 import { responseHandler } from '@libs/responseHelper';
 import { NewUser } from '@schema/sql/users.schema';
