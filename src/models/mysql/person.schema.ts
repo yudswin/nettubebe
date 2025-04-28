@@ -9,4 +9,3 @@ export const person = mysqlTable('person', {
 
 export type Person = typeof person.$inferSelect;
 export type NewPerson = typeof person.$inferInsert;
-
