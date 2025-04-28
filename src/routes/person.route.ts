@@ -5,7 +5,7 @@ import * as personDepartmentController from '@controllers/personDepartment.contr
 const router = Router();
 
 router.post('/', personController.createPerson);
-router.get('/', personController.getAllPersons);
+router.get('/list', personController.getAllPersons);
 router.get('/:id', personController.getPersonById);
 router.get('/slug/:slug', personController.getPersonBySlug);
 router.patch('/:id', personController.updatePerson);

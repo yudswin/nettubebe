@@ -4,7 +4,7 @@ import * as departmentController from "@controllers/department.controller"
 const router = Router();
 
 router.post('/', departmentController.createDepartment);
-router.get('/', departmentController.getAllDepartments);
+router.get('/list', departmentController.getAllDepartments);
 router.get('/:id', departmentController.getDepartmentById);
 router.get('/slug/:slug', departmentController.getDepartmentBySlug);
 router.patch('/:id', departmentController.updateDepartment);
