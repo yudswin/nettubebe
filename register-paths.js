@@ -16,6 +16,7 @@ register({
         "@schema/sql/*": ["models/mysql/*"],
         "@schema/pg/*": ["models/pg/*"],
         "@types/*": ["types/*"],
-        "@libs/*": ["libs/*"]
+        "@libs/*": ["libs/*"],
+        "@data/*": ["data/*"]
     }
 });

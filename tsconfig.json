@@ -25,7 +25,8 @@
       "@schema/sql/*": ["src/models/mysql/*"],
       "@schema/pg/*": ["src/models/pg/*"],
       "@interfaces/*": ["src/types/*"],
-      "@libs/*": ["src/libs/*"]
+      "@libs/*": ["src/libs/*"],
+      "@data/*": ["src/data/*"]
     }
   },
   "include": ["src/**/*"],

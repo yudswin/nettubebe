@@ -16,3 +16,5 @@ export const personDepartment = mysqlTable('person_department', {
 }, (t) => [
     primaryKey({ columns: [t.personId, t.departmentId] })
 ])
+
+export type NewPersonDepartment = typeof personDepartment.$inferSelect;
