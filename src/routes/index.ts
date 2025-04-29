@@ -10,6 +10,7 @@ import contentRouter from "@routes/content.route"
 import castRouter from "@routes/cast.route"
 import directorRouter from "@routes/director.route"
 import reviewRouter from "@routes/review.route"
+import collectionRouter from "@routes/collection.route"
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/content/cast', castRouter)
 router.use('/content/director', directorRouter)
 router.use('/person', personRouter)
 router.use('/review', reviewRouter)
+router.use('/collection', collectionRouter)
 
 
 export const routes = router;
