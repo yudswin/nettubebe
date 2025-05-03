@@ -75,6 +75,8 @@ export const getCorsOptions = (): CorsOptions => {
             'Authorization',    // For Bearer tokens
             'X-Requested-With',// Common AJAX header
             'Accept',          // Content negotiation
+            'AccessToken',
+            'RefreshToken'
         ],
 
         credentials: true,      // Allow cookies/auth headers

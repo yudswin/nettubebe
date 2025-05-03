@@ -125,12 +125,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
         // Verify the password
         const verify = await verifyPassword(password, existed.password)
         if (!verify) {
-            responseHandler(res, {
+            return responseHandler(res, {
                 success: false,
-                statusCode: 401,
+                statusCode: 400,
                 error: 'Wrong password',
                 details: {
-                    error: 'User does not exists',
+                    error: 'Wrong password',
                     details: 'Password does not match for this user'
                 },
                 context
