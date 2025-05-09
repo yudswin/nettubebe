@@ -20,7 +20,7 @@ router.use('/v1/', streamRouter);
 router.use('/content', contentRouter)
 router.use('/content/genre', genreRouter)
 router.use('/content/country', countryRouter)
-router.use('/content/department', departmentRouter)
+router.use('/department', departmentRouter)
 router.use('/content/cast', castRouter)
 router.use('/content/director', directorRouter)
 router.use('/person', personRouter)

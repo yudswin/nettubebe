@@ -10,7 +10,8 @@ const upload = multer({
         fileSize: 1024 * 1024 * 500 // 500MB limit
     }
 });
-router.post('/upload/:contentId', middleware.authDev, upload.single('video'), mediaController.uploadVideo)
+router.post('/upload/:contentId', upload.single('video'), mediaController.uploadVideo)
+router.get('/:contentId', mediaController.getMediaByContent)
 router.get('/record/:mediaId', middleware.authDev, mediaController.getVideoRecord)
 router.put('/update/:mediaId', middleware.authDev, mediaController.updateRecord)
 router.delete('/delete/:mediaId', middleware.authDev, mediaController.deleteMedia)

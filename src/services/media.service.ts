@@ -29,6 +29,18 @@ export const getMediaRecord = async (id: string) => {
     }
 }
 
+export const getMediaByContent = async (contentId: string) => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        return await db.client.select()
+            .from(media)
+            .where(eq(media.contentId, contentId))
+            .execute()
+    } else {
+        console.log("Haven't implemented getMediaByContent")
+    }
+}
+
 
 export const updataRecord = async (
     id: string,

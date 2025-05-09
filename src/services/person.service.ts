@@ -1,6 +1,6 @@
 import { getDB } from "@db/client";
 import { person, NewPerson } from "@schema/sql/person.schema";
-import { eq } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 
 export const createPerson = async (personData: NewPerson) => {
     const db = getDB();
@@ -85,3 +85,20 @@ export const deletePerson = async (id: string) => {
         return { success: false };
     }
 };
+
+export const searchPerson = async (query: string, page = 1, limit = 10) => {
+    const db = getDB()
+    if (db.type === "mysql") {
+        return await db.client.select()
+            .from(person)
+            .where(
+                like(person.name, `%${query}%`)
+            )
+            .limit(limit)
+            .offset((page - 1) * limit)
+            .execute();
+    } else {
+        console.log("Haven't implemented searchPerson");
+        return [];
+    }
+}

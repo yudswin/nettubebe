@@ -1,6 +1,6 @@
 import { getDB } from "@db/client";
 import { contents, NewContent } from "@schema/sql/contents.schema";
-import { eq } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 
 export const createContent = async (contentData: NewContent) => {
     const db = getDB();
@@ -97,5 +97,27 @@ export const deleteContent = async (id: string) => {
     } else {
         console.log("Haven't implemented deleteContent");
         return { success: false };
+    }
+};
+
+export const searchContents = async (query: string, page = 1, limit = 10) => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        return await db.client.select()
+            .from(contents)
+            .where(
+                or(
+                    like(contents.title, `%${query}%`),
+                    like(contents.originTitle, `%${query}%`),
+                    like(contents.englishTitle, `%${query}%`),
+                    like(contents.overview, `%${query}%`)
+                )
+            )
+            .limit(limit)
+            .offset((page - 1) * limit)
+            .execute();
+    } else {
+        console.log("Haven't implemented searchContents");
+        return [];
     }
 };

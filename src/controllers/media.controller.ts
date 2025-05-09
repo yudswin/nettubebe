@@ -103,6 +103,38 @@ export const getVideoRecord = async (req: Request, res: Response): Promise<any> 
     }
 }
 
+export const getMediaByContent = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { contentId } = req.params
+        if (!contentId) {
+            return responseHandler(res, {
+                success: true,
+                statusCode: 400,
+                error: 'contentId is Required',
+                context
+            })
+        }
+        const result = await mediaService.getMediaByContent(contentId)
+        if (result) return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            result,
+            context
+        })
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error.',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+}
+
+
+
+
 export const updateRecord = async (req: Request, res: Response): Promise<any> => {
     try {
         const { mediaId } = req.params

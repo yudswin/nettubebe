@@ -11,6 +11,9 @@ router.get('/slug/:slug', personController.getPersonBySlug);
 router.patch('/:id', personController.updatePerson);
 router.delete('/:id', personController.deletePerson);
 
+// Search
+router.get('/v1/search', personController.searchPerson);
+
 router.post('/:id/departments', personDepartmentController.addDepartmentsToPerson);
 router.get('/:id/departments', personDepartmentController.getPersonDepartments);
 router.delete('/:id/departments', personDepartmentController.removeDepartmentsFromPerson);

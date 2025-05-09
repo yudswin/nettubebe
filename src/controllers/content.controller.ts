@@ -76,6 +76,8 @@ export const createContent = async (req: Request, res: Response): Promise<any> =
             });
         }
 
+        
+
         // Check existing slug
         const existingSlug = await contentService.getContentBySlug(slug);
         if (existingSlug) {
@@ -306,6 +308,38 @@ export const deleteContent = async (req: Request, res: Response): Promise<any> =
             success: true,
             statusCode: 200,
             message: 'Content deleted successfully',
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const searchContents = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { q, page = 1, limit = 10 } = req.query;
+        
+        if (!q || typeof q !== 'string') {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Search query is required',
+                context
+            });
+        }
+
+        const results = await contentService.searchContents(q, Number(page), Number(limit));
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: results.length > 0 ? 200 : 204,
+            result: results,
             context
         });
     } catch (error) {

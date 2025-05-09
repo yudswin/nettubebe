@@ -12,6 +12,9 @@ router.get('/slug/:slug', contentController.getContentBySlug);
 router.patch('/:id', contentController.updateContent);
 router.delete('/:id', contentController.deleteContent);
 
+// Search
+router.get('/v1/search', contentController.searchContents);
+
 // Genres
 router.post('/:contentId/genres', contentGenreController.addGenresToContent);
 router.get('/:contentId/genres', contentGenreController.getGenresForContent);
