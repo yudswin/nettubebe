@@ -1,5 +1,6 @@
 import { getDB } from "@db/client";
 import { directors } from "@schema/sql/directors.schema";
+import { person } from "@schema/sql/person.schema";
 import { eq, and, inArray } from "drizzle-orm";
 
 export const addDirectorsToContent = async (
@@ -25,9 +26,15 @@ export const getDirectorsForContent = async (contentId: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         return db.client
-            .select()
+            .select({
+                personId: directors.personId,
+                contentId: directors.contentId,
+                rank: directors.rank,
+                personName: person.name
+            })
             .from(directors)
             .where(eq(directors.contentId, contentId))
+            .leftJoin(person, (eq(person._id, directors.personId)))
             .execute();
     }
 };

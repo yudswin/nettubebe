@@ -1,5 +1,6 @@
 import { getDB } from "@db/client";
 import { contentGenre } from "@schema/sql/contentGenre.schema";
+import { genres } from "@schema/sql/genres.schema";
 import { eq, and, inArray } from "drizzle-orm";
 
 export const addGenresToContent = async (
@@ -22,9 +23,15 @@ export const getGenresForContent = async (contentId: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         return db.client
-            .select()
+            .select({
+                _id: genres._id,
+                name: genres.name,
+                englishName: genres.englishName,
+                slug: genres.slug
+            })
             .from(contentGenre)
             .where(eq(contentGenre.contentId, contentId))
+            .leftJoin(genres, (eq(genres._id, contentGenre.genreId)))
             .execute();
     }
 };

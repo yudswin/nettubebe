@@ -1,5 +1,6 @@
 import { getDB } from "@db/client";
 import { contentCountry } from "@schema/sql/contentCountry.schema";
+import { countries } from "@schema/sql/countries.schema";
 import { eq, and, inArray } from "drizzle-orm";
 
 export const addCountriesToContent = async (
@@ -22,9 +23,15 @@ export const getCountriesForContent = async (contentId: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         return db.client
-            .select()
+            .select({
+                _id: countries._id,
+                name: countries.name,
+                slug: countries.slug,
+                code: countries.code
+            })
             .from(contentCountry)
             .where(eq(contentCountry.contentId, contentId))
+            .leftJoin(countries, (eq(countries._id, contentCountry.countryId)))
             .execute();
     }
 };

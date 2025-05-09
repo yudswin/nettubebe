@@ -1,5 +1,6 @@
 import { getDB } from "@db/client";
 import { casts } from "@schema/sql/casts.schema";
+import { person } from "@schema/sql/person.schema";
 import { eq, and, inArray } from "drizzle-orm";
 
 export const addCastsToContent = async (
@@ -26,9 +27,17 @@ export const getCastsForContent = async (contentId: string) => {
     const db = getDB();
     if (db.type === "mysql") {
         return db.client
-            .select()
+            .select({
+                personId: casts.personId,
+                contentId: casts.contentId,
+                character: casts.character,
+                rank: casts.rank,
+                profilePath: person.profilePath,
+                personName: person.name
+            })
             .from(casts)
             .where(eq(casts.contentId, contentId))
+            .leftJoin(person, (eq(person._id, casts.personId)))
             .execute();
     }
 };
