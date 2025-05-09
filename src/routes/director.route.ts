@@ -5,6 +5,7 @@ const router = Router();
 
 router.post('/:contentId', directorController.addDirectorsToContent);
 router.get('/:contentId', directorController.getDirectorsForContent);
+router.get('/v1/:personId/', directorController.getContentForDirector);
 router.delete('/:contentId', directorController.removeDirectorsFromContent);
 router.put('/:contentId', directorController.setDirectorsForContent);
 

@@ -10,4 +10,6 @@ router.get('/slug/:slug', departmentController.getDepartmentBySlug);
 router.patch('/:id', departmentController.updateDepartment);
 router.delete('/:id', departmentController.deleteDepartment);
 
+router.get('/v1/search', departmentController.searchDepartment)
+
 export default router;

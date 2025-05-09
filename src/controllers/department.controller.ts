@@ -231,3 +231,34 @@ export const deleteDepartment = async (req: Request, res: Response): Promise<any
         });
     }
 };
+
+export const searchDepartment = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { q, page = 1, limit = 5 } = req.query
+        if (!q || typeof q !== 'string') {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Search query is required',
+                context
+            });
+        }
+
+        const results = await departmentService.searchDepartment(q, Number(page), Number(limit));
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: results.length > 0 ? 200 : 204,
+            result: results,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+}

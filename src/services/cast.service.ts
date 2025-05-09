@@ -77,3 +77,15 @@ export const setCastsForContent = async (
         });
     }
 };
+
+
+export const getContentForCast = async (personId: string) => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        return db.client
+            .select()
+            .from(casts)
+            .where(eq(casts.personId, personId))
+            .execute();
+    }
+};

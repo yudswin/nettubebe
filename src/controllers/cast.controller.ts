@@ -188,3 +188,32 @@ export const setCastsForContent = async (req: Request, res: Response): Promise<a
         });
     }
 };
+
+export const getContentForCast = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { personId } = req.params;
+        const contents = await castService.getContentForCast(personId);
+        if (!contents) {
+            return responseHandler(res, {
+                success: true,
+                statusCode: 204,
+                context
+            });
+        }
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: contents.length > 0 ? 200 : 204,
+            result: contents,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};

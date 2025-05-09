@@ -73,3 +73,14 @@ export const setDirectorsForContent = async (
         });
     }
 };
+
+export const getContentForDirector = async (personId: string) => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        return db.client
+            .select()
+            .from(directors)
+            .where(eq(directors.personId, personId))
+            .execute();
+    }
+};

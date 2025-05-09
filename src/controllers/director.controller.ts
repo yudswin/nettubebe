@@ -182,3 +182,32 @@ export const setDirectorsForContent = async (req: Request, res: Response): Promi
         });
     }
 };
+
+export const getContentForDirector = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { personId } = req.params;
+        const contents = await directorService.getContentForDirector(personId);
+        if (!contents) {
+            return responseHandler(res, {
+                success: true,
+                statusCode: 204,
+                context
+            });
+        }
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: contents.length > 0 ? 200 : 204,
+            result: contents,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
