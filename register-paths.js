@@ -17,6 +17,7 @@ register({
         "@schema/pg/*": ["models/pg/*"],
         "@types/*": ["types/*"],
         "@libs/*": ["libs/*"],
-        "@data/*": ["data/*"]
+        "@data/*": ["data/*"],
+        "@interfaces/*": ["types/*"]
     }
 });
