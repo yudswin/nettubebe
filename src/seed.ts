@@ -1,4 +1,3 @@
-// scripts/seed-genres.ts
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
 import fs from 'fs';
@@ -17,6 +16,7 @@ dotenv.config();
 async function initializeDatabase() {
     const connection = await mysql.createConnection({
         host: process.env.MYSQL_HOST,
+        port: process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : 11162,
         user: process.env.MYSQL_USER,
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE,

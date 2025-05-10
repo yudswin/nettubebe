@@ -33,9 +33,10 @@ export const getDBClient = async (): Promise<void> => {
 async function getMysqlClient() {
     const connection = await mysql.createConnection({
         host: process.env.MYSQL_HOST,
+        port: process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : 11162,
         user: process.env.MYSQL_USER,
         password: process.env.MYSQL_PASSWORD,
-        database: process.env.MYSQL_DATABASE
+        database: process.env.MYSQL_DATABASE,
     });
     return drizzleMySql(connection);
 }

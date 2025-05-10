@@ -18,10 +18,9 @@ app.use(bodyParser.json());
 app.use('/', routes)
 
 async function main() {
-    // Initialize DB Instances
     try {
         await getDBClient();
-        console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+        console.log(`Server running in ${process.env.NODE_ENV} via ${process.env.MYSQL_HOST} mode on port ${PORT}`);
     } catch (error) {
         console.error('Failed to initialize database:', error);
         process.exit(1);
