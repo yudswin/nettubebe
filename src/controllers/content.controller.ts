@@ -76,8 +76,6 @@ export const createContent = async (req: Request, res: Response): Promise<any> =
             });
         }
 
-        
-
         // Check existing slug
         const existingSlug = await contentService.getContentBySlug(slug);
         if (existingSlug) {

@@ -12,9 +12,9 @@ router.patch('/:id', collectionController.updateCollection);
 router.delete('/:id', collectionController.deleteCollection);
 
 // CollectionContent 
-router.post('/:collectionId/contents/:contentId', collectionContentController.addContentToCollection);
+router.post('/:collectionId/content/:contentId', collectionContentController.addContentToCollection);
 router.get('/:collectionId/contents', collectionContentController.getCollectionContents);
-router.put('/:collectionId/contents/:contentId/rank', collectionContentController.updateContentRank);
-router.delete('/:collectionId/contents/:contentId', collectionContentController.removeContentFromCollection);
+router.put('/:collectionId/content/:contentId/rank', collectionContentController.updateContentRank);
+router.delete('/:collectionId/content/:contentId', collectionContentController.removeContentFromCollection);
 
 export default router;

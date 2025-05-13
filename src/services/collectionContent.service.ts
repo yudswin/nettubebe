@@ -1,5 +1,6 @@
 import { getDB } from "@db/client";
 import { collectionContent } from "@schema/sql/collectionContent.schema";
+import { contents } from "@schema/sql/contents.schema";
 import { and, eq } from "drizzle-orm";
 
 export const addContentToCollection = async (
@@ -47,12 +48,19 @@ export const getCollectionContents = async (collectionId: string) => {
     if (db.type === "mysql") {
         return db.client
             .select({
-                contentId: collectionContent.contentId,
                 rank: collectionContent.rank,
                 addedAt: collectionContent.addedAt,
+                _id: collectionContent.contentId,
+                title: contents.title,
+                bannerPath: contents.bannerPath,
+                year: contents.year,
+                type: contents.type,
+                publish: contents.publish,
+                status: contents.status
             })
             .from(collectionContent)
             .where(eq(collectionContent.collectionId, collectionId))
+            .leftJoin(contents, (eq(contents._id, collectionContent.contentId)))
             .orderBy(collectionContent.rank)
             .execute();
     }

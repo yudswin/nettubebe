@@ -26,10 +26,11 @@ export const getCollectionById = async (id: string) => {
 export const getCollectionBySlug = async (slug: string) => {
     const db = getDB();
     if (db.type === "mysql") {
-        return await db.client.select()
+        const [result] = await db.client.select()
             .from(collections)
             .where(eq(collections.slug, slug))
             .execute()
+        return result
     }
 }
 
