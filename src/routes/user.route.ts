@@ -16,6 +16,7 @@ router.post('/auth/register', userController.createUser);
 router.post('/auth/login', userController.login);
 router.get('/getAll', middleware.authDev, userController.getUsers);
 router.get('/me', middleware.authUser, userController.getSelf);
+router.put('/auth/update-password', middleware.authUser, userController.updatePassword);
 
 // Avatar
 router.post('/avatar/upload', middleware.authUser, upload.single('image'), imgurController.uploadAvatar)

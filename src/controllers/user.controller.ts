@@ -201,18 +201,26 @@ export const updateUser = async (req: Request, res: Response): Promise<any> => {
         const { id } = req.params;
         const {
             name,
-            email,
-            password,
-            avatarId,
             token,
             gender
         } = req.body
 
-        if (!name && !email && !password && !avatarId && !token && !gender) {
+        if (!name && !token && !gender) {
             return responseHandler(res, {
                 success: false,
                 statusCode: 400,
                 error: 'Missing required fields',
+                context
+            });
+        }
+
+        const existingUser = await userService.getById(id);
+        if (!existingUser) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 404,
+                error: 'User not found',
+                details: `No user found with ID: ${id}`,
                 context
             });
         }
@@ -277,6 +285,104 @@ export const getSelf = async (req: Request, res: Response): Promise<any> => {
                 });
             }
         }
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const updatePassword = async (req: Request, res: Response): Promise<any> => {
+    const context = 'UserController';
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        // Validate required fields
+        if (!currentPassword || !newPassword) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Missing required fields',
+                details: {
+                    currentPassword: !currentPassword ? 'Current password is required' : undefined,
+                    newPassword: !newPassword ? 'New password is required' : undefined
+                },
+                context
+            });
+        }
+
+        // Validate new password strength
+        if (newPassword.length < 8) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Password must be at least 8 characters long',
+                context
+            });
+        }
+
+        // Retrieve token from headers
+        const { newAccessToken, accesstoken } = req.headers as { newAccessToken?: string; accesstoken?: string };
+        const token = newAccessToken || accesstoken;
+        if (!token) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 401,
+                error: 'Authorization token required',
+                context
+            });
+        }
+
+        // Decode token to get user info
+        const decoded = decodeToken(token);
+        if (!decoded) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 401,
+                error: 'Invalid or expired token',
+                context
+            });
+        }
+
+        // Fetch user by email
+        const user = await userService.getByEmail(decoded.email);
+        if (!user) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 404,
+                error: 'User not found',
+                context
+            });
+        }
+
+        // Verify current password
+        const isPasswordValid = await verifyPassword(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 400,
+                error: 'Current password is incorrect',
+                context
+            });
+        }
+
+        // Hash new password
+        const hashedPassword = await hashPassword(newPassword);
+
+        // Update user's password
+        await userService.updateUser(user._id, { password: hashedPassword });
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            message: 'Password updated successfully',
+            context
+        });
+
     } catch (error) {
         return responseHandler(res, {
             success: false,

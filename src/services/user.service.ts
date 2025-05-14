@@ -46,6 +46,7 @@ export const getByEmailWithoutPass = async (email: string) => {
     if (db.type === "mysql") {
         const [user] = await db.client
             .select({
+                _id: sqlUsers._id,
                 name: sqlUsers.name,
                 email: sqlUsers.email,
                 avatarId: sqlUsers.avatarId,
@@ -105,3 +106,4 @@ export const deleteUser = async (id: string) => {
         return { success: true };
     } else return console.error('Error deleting user');
 };
+
