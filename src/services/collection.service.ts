@@ -1,6 +1,6 @@
 import { getDB } from "@db/client";
 import { collections, CollectionType, NewCollection } from "@schema/sql/collections.schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const createCollection = async (collectionData: NewCollection) => {
     const db = getDB();
@@ -34,12 +34,18 @@ export const getCollectionBySlug = async (slug: string) => {
     }
 }
 
-export const getAllCollections = async () => {
+export const getAllCollections = async (limit?: number) => {
     const db = getDB();
     if (db.type === "mysql") {
-        return await db.client.select()
-            .from(collections)
-            .execute()
+        if (limit)
+            return await db.client.select()
+                .from(collections)
+                .limit(limit)
+                .execute()
+        else
+            return await db.client.select()
+                .from(collections)
+                .execute()
     }
 
 }
@@ -78,3 +84,13 @@ export const deleteCollection = async (id: string) => {
     }
 }
 
+export const countCollections = async () => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        const [result] = await db.client.select({ count: sql`count(*)` })
+            .from(collections)
+            .execute();
+        return result.count as number;
+    }
+    return 0;
+}

@@ -97,7 +97,10 @@ export const createCollection = async (req: Request, res: Response): Promise<any
 
 export const getAllCollections = async (req: Request, res: Response): Promise<any> => {
     try {
-        const collections = await collectionService.getAllCollections();
+        const { limit = 10 } = req.body;
+
+        const collections = await collectionService.getAllCollections(Number(limit));
+
         if (!collections) {
             return responseHandler(res, {
                 success: false,
@@ -111,6 +114,27 @@ export const getAllCollections = async (req: Request, res: Response): Promise<an
             success: true,
             statusCode: collections.length > 0 ? 200 : 204,
             result: collections,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const getCollectionsCount = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const count = await collectionService.countCollections();
+        
+        return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            result: { total: count },
             context
         });
     } catch (error) {

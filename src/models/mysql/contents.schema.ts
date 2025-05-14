@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, decimal, int, mysqlEnum, date, json, boolean } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar,text, decimal, int, mysqlEnum, date, json, boolean } from "drizzle-orm/mysql-core";
 
 const contentType = ['movie', 'tvshow'];
 const status = ['upcoming', 'finish', 'updating'];
@@ -9,7 +9,7 @@ export const contents = mysqlTable('contents', {
     originTitle: varchar('origin_title', { length: 255 }),
     englishTitle: varchar('english_title', { length: 255 }),
     slug: varchar('slug', { length: 255 }).unique().notNull(),
-    overview: varchar('overview', { length: 255 }).notNull(),
+    overview: text('overview').notNull(),
     imdbRating: decimal('imdb_rating', { precision: 3, scale: 1 }).notNull().default("0.0"),
     lastestEpisode: int('lastest_episode'),
     lastestSeason: int('lastest_season'),

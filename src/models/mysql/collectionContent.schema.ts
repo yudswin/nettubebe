@@ -19,3 +19,4 @@ export const collectionContent = mysqlTable('collection_content', {
     primaryKey({ columns: [t.collectionId, t.contentId] })
 ])
 
+export type NewCollectionContent = typeof collectionContent.$inferInsert;

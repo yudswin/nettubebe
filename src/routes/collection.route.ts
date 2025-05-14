@@ -6,6 +6,7 @@ const router = Router();
 
 router.post('/', collectionController.createCollection);
 router.get('/list', collectionController.getAllCollections);
+router.get('/total', collectionController.getCollectionsCount)
 router.get('/:id', collectionController.getCollectionById);
 router.get('/slug/:slug', collectionController.getCollectionBySlug);
 router.patch('/:id', collectionController.updateCollection);
