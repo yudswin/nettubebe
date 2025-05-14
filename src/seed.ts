@@ -10,6 +10,10 @@ import { departments, NewDepartment } from '@schema/sql/departments.schema';
 import { NewPerson, person } from '@schema/sql/person.schema';
 import { NewPersonDepartment, personDepartment } from '@schema/sql/personDepartment.schema';
 import { contents, NewContent } from '@schema/sql/contents.schema';
+import { collections, NewCollection } from '@schema/sql/collections.schema';
+import { collectionContent, NewCollectionContent } from '@schema/sql/collectionContent.schema';
+import { imgs, NewImage } from '@schema/sql/imgs.schema';
+import { NewUser, users } from '@schema/sql/users.schema';
 
 dotenv.config();
 
@@ -101,26 +105,54 @@ async function seedDepartments() {
     console.log('🎉 Seeded departments successfully.');
 }
 
+async function seedImgs() {
+    const db = await initializeDatabase();
+    await db.delete(imgs);
+
+    try {
+        const jsonPath = path.resolve(__dirname, './data/imgs.json');
+        const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) as any[];
+        
+        if (jsonData.length === 0) {
+            console.warn('⚠️ No images to insert; skipping images seed.');
+            return;
+        }
+        
+        const records: NewImage[] = jsonData.map(item => ({
+            _id: item._id,
+            imgurId: item.imgur_id,
+            deleteHash: item.delete_hash,
+            path: item.path,
+            type: item.type as "avatar" | "person" | "thumbnail" | "banner",
+            metadata: item.metadata
+        }));
+
+        console.log(`✅ Inserting ${records.length} images...`);
+        await db.insert(imgs).values(records);
+        console.log('🎉 Seeded images successfully.');
+    } catch (error) {
+        console.error('❌ Error seeding images:', error);
+    }
+}
+
 async function seedContents() {
     const db = await initializeDatabase();
-    const csvPath = path.resolve(__dirname, './data/contents.csv');
-
     await db.delete(contents)
+    const csvPath = path.resolve(__dirname, './data/contents2.csv');
     const records = await loadCsv<NewContent>(csvPath, row => ({
         _id: row._id,
         title: row.title,
-        originTitle: row.originTitle,
-        englishTitle: row.englishTitle,
+        originTitle: row.origin_title,
+        englishTitle: row.english_title,
         slug: row.slug,
         overview: row.overview,
-        imdbRating: row.imdbRating,
-        releaseDate: new Date(row.releaseDate),
+        releaseDate: new Date(row.release_date),
         year: parseInt(row.year),
         type: row.type as "movie" | "tvshow",
         status: row.status as "upcoming" | "finish" | "updating",
         publish: row.publish === "True" ? true : false,
-        thumbnailPath: row.thumbnailPath,
-        bannerPath: row.bannerPath,
+        thumbnailPath: row.thumbnail_path,
+        bannerPath: row.banner_path,
         runtime: parseInt(row.runtime)
     }));
 
@@ -132,6 +164,63 @@ async function seedContents() {
     console.log(`✅ Inserting ${records.length} contents...`);
     await db.insert(contents).values(records);
     console.log('🎉 Seeded contents successfully.');
+}
+
+async function seedCollections() {
+    const db = await initializeDatabase();
+    await db.delete(collections)
+    const csvPath = path.resolve(__dirname, './data/collections.csv');
+    const records = await loadCsv<NewCollection>(csvPath, row => ({
+        _id: row._id,
+        name: row.name,
+        slug: row.slug,
+        type: row.type as "topic" | "hot" | "features",
+        description: row.description,
+        publish: row.publish === "True" ? true : false,
+    }));
+
+    if (records.length === 0) {
+        console.warn('⚠️ No collection to insert; skipping collection seed.');
+        return;
+    }
+
+    console.log(`✅ Inserting ${records.length} collections...`);
+    await db.insert(collections).values(records);
+    console.log('🎉 Seeded collections successfully.');
+}
+
+async function seedUsers() {
+    const db = await initializeDatabase();
+    await db.delete(users);
+    const existingImgs = await db.select({ _id: imgs._id }).from(imgs);
+    const validImgIds = new Set(existingImgs.map(img => img._id));
+
+    const csvPath = path.resolve(__dirname, './data/users.csv');
+    const records = await loadCsv<NewUser>(csvPath, row => {
+        const avatarId = row.avatar_id && validImgIds.has(row.avatar_id) ? row.avatar_id : null;
+
+        return {
+            _id: row._id,
+            name: row.name,
+            email: row.email,
+            password: row.password,
+            avatarId: avatarId,
+            token: row.token || null,
+            roles: (row.roles || 'user') as "user" | "admin" | "moderator",
+            gender: (row.gender || 'none') as "male" | "female" | "none",
+            isVerified: row.is_verified === "true",
+            isActive: row.is_active === "true" || true
+        };
+    });
+
+    if (records.length === 0) {
+        console.warn('⚠️ No users to insert; skipping users seed.');
+        return;
+    }
+
+    console.log(`✅ Inserting ${records.length} users...`);
+    await db.insert(users).values(records);
+    console.log('🎉 Seeded users successfully.');
 }
 
 async function seedPerson() {
@@ -168,13 +257,53 @@ async function seedPerson() {
     console.log('🎉 Seeded persons & personDepartment successfully.');
 }
 
+async function seedCollectionsContent() {
+    const db = await initializeDatabase();
+
+    await db.delete(collectionContent);
+
+    const csvPath = path.resolve(__dirname, './data/collectionContents.csv');
+    const records = await loadCsv<NewCollectionContent>(csvPath, row => ({
+        collectionId: row.collection_id,
+        contentId: row.content_id,
+    }));
+
+    if (records.length === 0) {
+        console.warn('⚠️ No contents to insert; skipping contents seed.');
+        return;
+    }
+
+    console.log(`✅ Inserting ${records.length} collection-content relationships...`);
+
+    try {
+        await db.insert(collectionContent).values(records);
+    } catch (error) {
+        console.error('Error inserting collection contents:', error);
+
+        console.log('Trying to insert records one by one to identify issues...');
+        for (const record of records) {
+            try {
+                await db.insert(collectionContent).values(record);
+            } catch (e) {
+                console.error(`Failed to insert: collectionId=${record.collectionId}, contentId=${record.contentId}`);
+            }
+        }
+    }
+
+    console.log('🎉 Seeded collection contents successfully.');
+}
+
 async function main() {
     console.log('🚀 Starting data seeding...');
     await seedGenres();
     await seedCountries();
     await seedDepartments();
     await seedPerson();
+    await seedCollections()
     await seedContents();
+    await seedCollectionsContent()
+    await seedUsers();
+    await seedImgs()
     console.log('🏁 All seeds completed.');
 }
 
