@@ -12,8 +12,10 @@ router.get('/slug/:slug', collectionController.getCollectionBySlug);
 router.patch('/:id', collectionController.updateCollection);
 router.delete('/:id', collectionController.deleteCollection);
 
+
 // CollectionContent 
 router.post('/:collectionId/content/:contentId', collectionContentController.addContentToCollection);
+router.get('/content/topic', collectionContentController.getTopicCollectionContents)
 router.get('/:collectionId/contents', collectionContentController.getCollectionContents);
 router.put('/:collectionId/content/:contentId/rank', collectionContentController.updateContentRank);
 router.delete('/:collectionId/content/:contentId', collectionContentController.removeContentFromCollection);

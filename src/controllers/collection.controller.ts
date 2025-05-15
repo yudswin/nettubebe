@@ -130,7 +130,7 @@ export const getAllCollections = async (req: Request, res: Response): Promise<an
 export const getCollectionsCount = async (req: Request, res: Response): Promise<any> => {
     try {
         const count = await collectionService.countCollections();
-        
+
         return responseHandler(res, {
             success: true,
             statusCode: 200,

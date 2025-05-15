@@ -47,7 +47,21 @@ export const getAllCollections = async (limit?: number) => {
                 .from(collections)
                 .execute()
     }
+}
 
+export const getTopicCollections = async (limit?: number) => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        if (limit)
+            return await db.client.select()
+                .from(collections)
+                .limit(limit)
+                .execute()
+        else
+            return await db.client.select()
+                .from(collections)
+                .execute()
+    }
 }
 
 export const updateCollection = async (
@@ -94,3 +108,4 @@ export const countCollections = async () => {
     }
     return 0;
 }
+

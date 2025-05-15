@@ -80,6 +80,7 @@ export const addContentToCollection = async (req: Request, res: Response): Promi
 export const getCollectionContents = async (req: Request, res: Response): Promise<any> => {
     try {
         const { collectionId } = req.params;
+        const { limit } = req.body
 
         const collection = await collectionService.getCollectionById(collectionId);
         if (!collection) {
@@ -91,7 +92,7 @@ export const getCollectionContents = async (req: Request, res: Response): Promis
             });
         }
 
-        const contents = await collectionContentService.getCollectionContents(collectionId);
+        const contents = await collectionContentService.getCollectionContents(collectionId, limit);
         if (!contents) {
             return responseHandler(res, {
                 success: false,
@@ -184,6 +185,28 @@ export const removeContentFromCollection = async (req: Request, res: Response): 
             success: true,
             statusCode: 200,
             message: 'Content removed from collection',
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const getTopicCollectionContents = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { limitContents, limitCollections } = req.body;
+        const contents = await collectionContentService.getTopicCollectionContents(Number(limitCollections), Number(limitContents));
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: contents && contents.length > 0 ? 200 : 204,
+            result: contents || [],
             context
         });
     } catch (error) {
