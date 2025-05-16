@@ -97,10 +97,36 @@ export const createCollection = async (req: Request, res: Response): Promise<any
 
 export const getAllCollections = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { limit = 10 } = req.body;
+        const collections = await collectionService.getAllCollections();
+        if (!collections) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 500,
+                error: `Error occurs in database.`,
+                context
+            });
+        }
 
-        const collections = await collectionService.getAllCollections(Number(limit));
+        return responseHandler(res, {
+            success: true,
+            statusCode: collections.length > 0 ? 200 : 204,
+            result: collections,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
 
+export const getAllCollectionWithOutFeatures = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const collections = await collectionService.getAllCollectionsWithOutFeatures();
         if (!collections) {
             return responseHandler(res, {
                 success: false,
@@ -135,6 +161,36 @@ export const getCollectionsCount = async (req: Request, res: Response): Promise<
             success: true,
             statusCode: 200,
             result: { total: count },
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const getHeadlineCollection = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const collections = await collectionService.getHeadlineCollection();
+
+        if (!collections) {
+            return responseHandler(res, {
+                success: false,
+                statusCode: 500,
+                error: `Error occurs in database.`,
+                context
+            });
+        }
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            result: collections,
             context
         });
     } catch (error) {

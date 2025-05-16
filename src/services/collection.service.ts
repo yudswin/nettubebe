@@ -1,6 +1,6 @@
 import { getDB } from "@db/client";
 import { collections, CollectionType, NewCollection } from "@schema/sql/collections.schema";
-import { eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ne, or, sql } from "drizzle-orm";
 
 export const createCollection = async (collectionData: NewCollection) => {
     const db = getDB();
@@ -34,17 +34,22 @@ export const getCollectionBySlug = async (slug: string) => {
     }
 }
 
-export const getAllCollections = async (limit?: number) => {
+export const getAllCollections = async () => {
     const db = getDB();
     if (db.type === "mysql") {
-        if (limit)
-            return await db.client.select()
+        return await db.client.select()
                 .from(collections)
-                .limit(limit)
+                .orderBy(desc(collections.createdAt))
                 .execute()
-        else
-            return await db.client.select()
+    }
+}
+
+export const getAllCollectionsWithOutFeatures = async () => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        return await db.client.select()
                 .from(collections)
+                .where(ne(collections.type, 'features'))
                 .execute()
     }
 }
@@ -103,8 +108,36 @@ export const countCollections = async () => {
     if (db.type === "mysql") {
         const [result] = await db.client.select({ count: sql`count(*)` })
             .from(collections)
+            .where(
+                and(
+                    or(
+                        // eq(collections.type, 'hot'),
+                        // eq(collections.type, 'topic'),
+                        ne(collections.type, 'features')
+                    ),
+                    // eq(collections.publish, true)
+                )
+            )
             .execute();
         return result.count as number;
+    }
+    return 0;
+}
+
+export const getHeadlineCollection = async () => {
+    const db = getDB();
+    if (db.type === "mysql") {
+        const [result] = await db.client.select()
+            .from(collections)
+            .where(
+                and(
+                    eq(collections.type, 'features'),
+                    eq(collections.publish, true)
+                )
+            )
+            .orderBy(asc(collections.createdAt))
+            .limit(1)
+        return result
     }
     return 0;
 }
