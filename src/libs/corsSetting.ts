@@ -27,19 +27,21 @@ export const getCorsOptions = (): CorsOptions => {
         'http://localhost:5173',    // Vite default development server
         'http://localhost:4200',    // Angular default development server
         'http://127.0.0.1:3000',    // Alternative localhost address
-        'https://nettubefe.vercel.app'
+        'https://nettubefe.vercel.app',
+        'https://nettubebe.onrender.com',
     ];
 
     // Production settings - your live domain(s)
     const productionOrigins = [
-        process.env.PRODUCTION_URL || 'https://yourproductiondomain.com',
-        'https://www.yourproductiondomain.com', // Common www variant
+        'https://nettubefe.vercel.app',
+        'https://nettubebe.onrender.com',
     ];
 
     // Test environment settings (for staging or testing)
     const testOrigins = [
         'http://localhost:3001',    // Test-specific frontend port
-        'https://staging.yourdomain.com', // Common staging environment
+        'https://nettubefe.vercel.app',
+        'https://nettubebe.onrender.com',
     ];
 
     // Determine which origins to use based on the current NODE_ENV
