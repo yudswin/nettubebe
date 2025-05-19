@@ -39,6 +39,12 @@ export const createHistory = async (req: Request, res: Response): Promise<any> =
             });
         }
 
+        const contentId = await historyService.getMediaContentId(mediaId);
+
+        if (contentId) {
+            await historyService.deleteHistoryByContentId(userId, contentId);
+        }
+
         const historyData: NewHistory = {
             userId,
             mediaId,
@@ -50,8 +56,8 @@ export const createHistory = async (req: Request, res: Response): Promise<any> =
 
         return responseHandler(res, {
             success: true,
-            statusCode: 200,
-            message: 'History entry updated',
+            statusCode: 201,
+            message: 'History entry created',
             result: historyEntry,
             context
         });

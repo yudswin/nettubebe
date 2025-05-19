@@ -1,4 +1,5 @@
 import { getDB } from "@db/client";
+import { contents } from "@schema/sql/contents.schema";
 import { favorites, NewFavorite } from "@schema/sql/favorites.schema";
 import { and, eq } from "drizzle-orm";
 
@@ -44,9 +45,15 @@ export const getFavorite = async (userId: string, contentId: string) => {
 export const getUserFavorites = async (userId: string) => {
     const db = getDB();
     if (db.type === "mysql") {
-        return await db.client.select()
+        return await db.client.select({
+            userId: favorites.userId,
+            contentId: favorites.contentId,
+            favoritedAt: favorites.favoritedAt,
+            content: contents
+        })
             .from(favorites)
             .where(eq(favorites.userId, userId))
+            .leftJoin(contents, eq(contents._id, favorites.contentId))
             .execute();
     } else {
         console.log("Haven't implemented getUserFavorites");

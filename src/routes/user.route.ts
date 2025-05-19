@@ -23,18 +23,18 @@ router.post('/avatar/upload', middleware.authUser, upload.single('image'), imgur
 router.delete('/avatar/delete', middleware.authUser, imgurController.deleteAvatar)
 
 // History
-router.post('/history', historyController.createHistory);
-router.get('/:userId/media/:mediaId', historyController.getHistoryEntry);
-router.get('/:userId', historyController.getUserHistory);
-router.get('/media/:mediaId', historyController.getMediaHistory);
-router.patch('/:userId/media/:mediaId', historyController.updateHistory);
-router.delete('/:userId/media/:mediaId', historyController.deleteHistory);
+router.post('/history/create', historyController.createHistory);
+router.get('/history/:userId/media/:mediaId', historyController.getHistoryEntry);
+router.get('/history/:userId', historyController.getUserHistory);
+router.get('/history/media/:mediaId', historyController.getMediaHistory);
+router.patch('/history/:userId/media/:mediaId', historyController.updateHistory);
+router.delete('/history/:userId/media/:mediaId', historyController.deleteHistory);
 
 // Favorite
-router.post('/favorite', favoriteController.createFavorite);
-router.get('/:userId/content/:contentId', favoriteController.getFavorite);
-router.get('/:userId', favoriteController.getUserFavorites);
-router.get('/content/:contentId', favoriteController.getContentFavorites);
-router.delete('/:userId/content/:contentId', favoriteController.deleteFavorite);
+router.post('/favorite/create', favoriteController.createFavorite);
+router.get('/favorite/:userId/content/:contentId', favoriteController.getFavorite);
+router.get('/favorite/:userId', favoriteController.getUserFavorites);
+router.get('/favorite/content/:contentId', favoriteController.getContentFavorites);
+router.delete('/favorite/:userId/content/:contentId', favoriteController.deleteFavorite);
 
 export default router;
