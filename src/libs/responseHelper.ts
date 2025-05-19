@@ -42,6 +42,6 @@ export const responseHandler = (
         status: success ? 'success' : 'failed',
         msg: fullMessage,
         ...(details && { details }),
-        ...(result && { result })
+        ...(result && { result }),
     });
 };

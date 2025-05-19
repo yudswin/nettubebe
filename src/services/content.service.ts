@@ -1,6 +1,10 @@
 import { getDB } from "@db/client";
+import { contentCountry } from "@schema/sql/contentCountry.schema";
+import { contentGenre } from "@schema/sql/contentGenre.schema";
 import { contents, NewContent } from "@schema/sql/contents.schema";
-import { eq, like, or } from "drizzle-orm";
+import { countries } from "@schema/sql/countries.schema";
+import { genres } from "@schema/sql/genres.schema";
+import { and, count, countDistinct, eq, exists, inArray, like, or } from "drizzle-orm";
 
 export const createContent = async (contentData: NewContent) => {
     const db = getDB();
@@ -120,4 +124,96 @@ export const searchContents = async (query: string, page = 1, limit = 10) => {
         console.log("Haven't implemented searchContents");
         return [];
     }
+};
+
+export const browseContents = async (filters: {
+    years?: number[];
+    type?: 'movie' | 'tvshow';
+    status?: 'upcoming' | 'finish' | 'updating';
+    genreSlugs?: string[];
+    countrySlugs?: string[];
+    page?: number;
+    limit?: number;
+}) => {
+    const db = getDB();
+    const { years, type, status, genreSlugs, countrySlugs, page = 1, limit = 10 } = filters;
+
+    if (db.type === "mysql") {
+        const conditions = [];
+
+        if (genreSlugs?.length) {
+            conditions.push(
+                exists(
+                    db.client.select()
+                        .from(contentGenre)
+                        .innerJoin(genres, eq(contentGenre.genreId, genres._id))
+                        .where(and(
+                            eq(contentGenre.contentId, contents._id),
+                            inArray(genres.slug, genreSlugs)
+                        ))
+                )
+            )
+        }
+        if (countrySlugs?.length) {
+            conditions.push(
+                exists(
+                    db.client.select()
+                        .from(contentCountry)
+                        .innerJoin(countries, eq(contentCountry.countryId, countries._id))
+                        .where(and(
+                            eq(contentCountry.contentId, contents._id),
+                            inArray(countries.slug, countrySlugs)
+                        ))
+                )
+            );
+        }
+        if (type) {
+            conditions.push(eq(contents.type, type));
+        }
+
+        if (status) {
+            conditions.push(eq(contents.status, status));
+        }
+        if (years?.length) {
+            conditions.push(inArray(contents.year, years));
+        }
+
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+        const results = await db.client.select()
+            .from(contents)
+            .where(whereClause)
+            .limit(limit)
+            .offset((page - 1) * limit);
+
+        // Get total count for pagination
+        const totalResult = await db.client
+            .select({ count: count() })
+            .from(contents)
+            .where(whereClause);
+
+        const totalItems = Number(totalResult[0]?.count || 0);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            results,
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages
+            }
+        };
+    }
+
+    // Handle other database types
+    return {
+        results: [],
+        pagination: {
+            page,
+            limit,
+            totalItems: 0,
+            totalPages: 0
+        }
+    };
 };

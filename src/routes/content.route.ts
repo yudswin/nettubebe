@@ -15,6 +15,10 @@ router.delete('/:id', contentController.deleteContent);
 // Search
 router.get('/v1/search', contentController.searchContents);
 
+// Browse
+router.get('/v1/browse', contentController.browseContents);
+
+
 // Genres
 router.post('/:contentId/genres', contentGenreController.addGenresToContent);
 router.get('/:contentId/genres', contentGenreController.getGenresForContent);

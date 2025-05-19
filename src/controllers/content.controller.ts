@@ -16,7 +16,7 @@ const validateContentStatus = (status: string): status is 'upcoming' | 'finish' 
 
 export const createContent = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { 
+        const {
             title,
             originTitle,
             englishTitle,
@@ -322,7 +322,7 @@ export const deleteContent = async (req: Request, res: Response): Promise<any> =
 export const searchContents = async (req: Request, res: Response): Promise<any> => {
     try {
         const { q, page = 1, limit = 10 } = req.query;
-        
+
         if (!q || typeof q !== 'string') {
             return responseHandler(res, {
                 success: false,
@@ -338,6 +338,80 @@ export const searchContents = async (req: Request, res: Response): Promise<any> 
             success: true,
             statusCode: results.length > 0 ? 200 : 204,
             result: results,
+            context
+        });
+    } catch (error) {
+        return responseHandler(res, {
+            success: false,
+            statusCode: 500,
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            context
+        });
+    }
+};
+
+export const browseContents = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const {
+            years,
+            type,
+            status,
+            genreSlugs,
+            countrySlugs,
+            page = 1,
+            limit = 10
+        } = req.query;
+
+        const filters: any = {
+            page: Number(page),
+            limit: Number(limit)
+        };
+
+        if (years) {
+            if (typeof years === 'string') {
+                if (years.includes(',')) {
+                    filters.years = years.split(',').map(y => Number(y.trim()));
+                } else {
+                    filters.years = [Number(years)];
+                }
+            } else if (Array.isArray(years)) {
+                filters.years = years.map(y => Number(y));
+            }
+        }
+
+        if (type && typeof type === 'string' && ['movie', 'tvshow'].includes(type)) {
+            filters.type = type as 'movie' | 'tvshow';
+        }
+
+        if (status && typeof status === 'string' && ['upcoming', 'finish', 'updating'].includes(status)) {
+            filters.status = status as 'upcoming' | 'finish' | 'updating';
+        }
+
+        let parsedGenreSlugs: string[] | undefined;
+        if (typeof genreSlugs === "string") {
+            parsedGenreSlugs = genreSlugs.split(",").map(s => s.trim());
+        } else if (Array.isArray(genreSlugs)) {
+            parsedGenreSlugs = genreSlugs.map(s => String(s));
+        }
+
+        let parsedCountrySlugs: string[] | undefined;
+        if (typeof countrySlugs === "string") {
+            parsedCountrySlugs = countrySlugs.split(",").map(s => s.trim());
+        } else if (Array.isArray(countrySlugs)) {
+            parsedCountrySlugs = countrySlugs.map(s => String(s));
+        }
+
+        const result = await contentService.browseContents({
+            ...filters,
+            genreSlugs: parsedGenreSlugs,
+            countrySlugs: parsedCountrySlugs,
+        });
+
+        return responseHandler(res, {
+            success: true,
+            statusCode: 200,
+            result: result,
             context
         });
     } catch (error) {
