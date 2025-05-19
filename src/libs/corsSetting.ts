@@ -27,6 +27,7 @@ export const getCorsOptions = (): CorsOptions => {
         'http://localhost:5173',    // Vite default development server
         'http://localhost:4200',    // Angular default development server
         'http://127.0.0.1:3000',    // Alternative localhost address
+        'https://nettubefe.vercel.app/'
     ];
 
     // Production settings - your live domain(s)
